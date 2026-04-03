@@ -1,6 +1,7 @@
 
 import { useState } from "react";
-import type { Patient, MusculoskeletalEvaluation, FunctionalAssessment, AlgoPlusScore, Brace, GaitTraining, LivingAids, PainScale, SittingPosition } from "../types/patient";
+import type { Patient, MusculoskeletalEvaluation, FunctionalAssessment, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale } from "../types/patient";
+import PainScaleRating from "../Scale/PainScale";
 
 const admissionOptions: Patient["admissionType"] = ["Orthopedic", "Pulmonary", "Neurologic", "Other"];
 const riskOptions: Patient["riskFactors"] = ["Smoking", "Overweight", "Other"];
@@ -36,7 +37,9 @@ export default function PatientForm() {
     const [painScale, setPainScale] = useState<PainScale>({
         numeric: false,
         score: 0,
+        painScaleRate: 0,
     });
+
 
     // Musculoskeletal evaluation state
     const [musculoskeletal, setMusculoskeletal] = useState<MusculoskeletalEvaluation>({
@@ -579,7 +582,12 @@ export default function PatientForm() {
 
             </>
 
-
+            <PainScaleRating
+                value={painScale.painScaleRate}
+                onChange={val =>
+                    setPainScale({ ...painScale, painScaleRate: val })
+                }
+            />
 
             <button
                 type="submit"

@@ -69,6 +69,7 @@ export type SittingPosition = Array<"Side of the bed" | "On Chair">;
 export type PainScale = {
   numeric: boolean;
   score?: number;
+  painScaleRate: number;
 };
 
 export type FunctionalField = {

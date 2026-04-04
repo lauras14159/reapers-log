@@ -19,13 +19,13 @@ export default function PainScaleRating({ value = 0, onChange }: PainScaleProps)
     };
 
     return (
-        <div className="w-full max-w-xl p-4 border rounded-2xl bg-white shadow-sm">
+        <div className="w-full max-w-xl p-4">
             <h3 className="text-sm font-semibold mb-2">
                 Pain Score (0–10 Numerical Rating)
             </h3>
 
             {/* Scale numbers */}
-            <div className="flex justify-between text-xs text-gray-500 px-1">
+            <div className="flex justify-between text-sm px-1 pt-3">
                 {Array.from({ length: 11 }, (_, i) => (
                     <span key={i}>{i}</span>
                 ))}
@@ -43,7 +43,7 @@ export default function PainScaleRating({ value = 0, onChange }: PainScaleProps)
             />
 
             {/* Labels */}
-            <div className="flex justify-between text-xs mt-1 text-gray-500">
+            <div className="flex justify-between text-xs mt-1 ">
                 <span>No Pain</span>
                 <span>Moderate Pain</span>
                 <span>Worst Pain</span>
@@ -52,7 +52,7 @@ export default function PainScaleRating({ value = 0, onChange }: PainScaleProps)
             {/* Selected value */}
             <div className="mt-3 text-center">
                 <span className="text-lg font-bold">{currentValue}</span>
-                <span className="text-sm text-gray-500"> / 10</span>
+                <span className="text-sm"> / 10</span>
             </div>
         </div>
     );

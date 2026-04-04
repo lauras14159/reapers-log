@@ -83,11 +83,11 @@ export default function PatientForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 p-6 bg-white shadow rounded-md">
+        <form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">
             <h2 className="text-xl font-semibold mb-4">Patient Information</h2>
 
             {/* Name & Age */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block font-medium mb-1">Full Name</label>
                     <input
@@ -134,7 +134,7 @@ export default function PatientForm() {
             </div>
 
             {/* Dates & Time */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                     <label className="block font-medium mb-1">Date of surgery / accident</label>
                     <input
@@ -378,67 +378,72 @@ export default function PatientForm() {
                 </div>
             </div>
 
-            {/* Functional Assessment Table */}
-            <h2 className="text-xl font-semibold mt-6 mb-2">Functional Assessment</h2>
+            {/* Functional Assessment */}
+            <h2 className="text-xl font-semibold mt-6 mb-2">
+                Functional Assessment
+            </h2>
             <h3 className="text-lg mb-2 space-x-5">
                 <span className="font-semibold">Scoring:</span>
                 <span>0 = Impossible </span>
                 <span>1 = Possible with difficulty </span>
                 <span>2 = Normal</span>
             </h3>
-            <table className="w-full border-collapse border border-gray-300 text-center">
-                <thead>
-                    <tr className="bg-gray-100">
-                        <th className="border p-2">Date</th>
-                        {[...Array(5)].map((_, idx) => (
-                            <th key={idx} className="border p-2">
-                                <input
-                                    type="date"
-                                    className="w-full text-center"
-                                />
-                            </th>
+            {/* Functional Assessment Table */}
+            <div className="w-full overflow-x-auto">
+                <table className="min-w-full sm:min-w-175 w-full border-collapse border border-gray-300 text-center">
+                    <thead>
+                        <tr>
+                            <th className="border p-2 text-left">Date</th>
+                            {[...Array(5)].map((_, idx) => (
+                                <th key={idx} className="border p-2">
+                                    <input
+                                        type="date"
+                                        className="w-full text-center p-1 text-sm sm:text-base"
+                                    />
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {[
+                            "Sitting",
+                            "Standing",
+                            "Using living aid",
+                            "Going to restroom",
+                            "Going up/down stairs",
+                            "Putting shoes/socks",
+                            "Walking 10 meters"
+                        ].map(field => (
+                            <tr key={field}>
+                                <td className="border p-2 text-left font-medium text-sm sm:text-base">{field}</td>
+                                {[...Array(5)].map((_, idx) => (
+                                    <td key={idx} className="border p-2">
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={2}
+                                            className="w-full p-1 text-center text-sm sm:text-base"
+                                        />
+                                    </td>
+                                ))}
+                            </tr>
                         ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {[
-                        "Sitting",
-                        "Standing",
-                        "Using living aid",
-                        "Going to restroom",
-                        "Going up/down stairs",
-                        "Putting shoes/socks",
-                        "Walking 10 meters"
-                    ].map(field => (
-                        <tr key={field}>
-                            <td className="border p-2 text-left font-medium">{field}</td>
+
+                        <tr>
+                            <td className="border p-2 text-left font-medium text-sm sm:text-base">Total</td>
                             {[...Array(5)].map((_, idx) => (
                                 <td key={idx} className="border p-2">
                                     <input
-                                        type="number"
-                                        min={0}
-                                        max={2}
-                                        className="w-full p-1 text-center"
+                                        type="text"
+                                        className="p-1 w-full text-center text-sm sm:text-base"
                                     />
                                 </td>
                             ))}
                         </tr>
-                    ))}
-
-                    <tr>
-                        <td className="border p-2 text-left font-medium">Total</td>
-                        {[...Array(5)].map((_, idx) => (
-                            <td key={idx} className="border p-2">
-                                <input
-                                    type="text"
-                                    className="p-1 w-full text-center"
-                                />
-                            </td>
-                        ))}
-                    </tr>
-                </tbody>
-            </table>
-
+                    </tbody>
+                </table>
+            </div>
+            {/* Additional Assessments */}
             <>
                 {/* Sitting Position */}
                 <div className="mb-4">
@@ -514,11 +519,13 @@ export default function PatientForm() {
                 </div>
 
                 {/* Pain Scale and Algo+ Score */}
-                <div className="flex flex-row gap-x-10">
-                    <div className="mb-4 flex items-center gap-x-2">
-                        <p className="font-medium">Pain Scale</p>
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-x-10">
 
-                        <label className="flex items-center gap-2 pl-6">
+                    {/* Pain Scale */}
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                        <p className="font-medium w-full sm:w-auto">Pain Scale</p>
+
+                        <label className="flex items-center gap-2 sm:pl-6">
                             <input
                                 type="checkbox"
                                 checked={painScale.numeric}
@@ -533,7 +540,7 @@ export default function PatientForm() {
                             type="number"
                             min={0}
                             max={10}
-                            className="border p-1 rounded w-16"
+                            className="border p-1 rounded w-16 shrink-0"
                             placeholder="0 - 10"
                             value={painScale.score ?? ""}
                             onChange={e =>
@@ -548,8 +555,8 @@ export default function PatientForm() {
                     </div>
 
                     {/* Algo+ Score */}
-                    <div className="mb-4 flex items-center gap-x-2">
-                        <label className="flex items-center gap-2 font-medium">
+                    <div className="mb-4 flex flex-row items-center gap-2">
+                        <label className="flex items-center gap-2">
                             <input
                                 type="checkbox"
                                 checked={algoPlus.algoChecked}
@@ -565,7 +572,7 @@ export default function PatientForm() {
 
                         <input
                             type="number"
-                            className="border p-1 rounded w-16"
+                            className="border p-1 rounded w-16 shrink-0"
                             placeholder="Score"
                             value={algoPlus.algoPlusScore ?? ""}
                             onChange={e =>
@@ -578,21 +585,89 @@ export default function PatientForm() {
                         />
                         <p>/5</p>
                     </div>
+
                 </div>
 
             </>
 
-            <PainScaleRating
-                value={painScale.painScaleRate}
-                onChange={val =>
-                    setPainScale({ ...painScale, painScaleRate: val })
-                }
-            />
+            {/* Pain Scale Table */}
+            <div className="overflow-x-auto">
+                <table className="min-w-40 w-full border-collapse border border-gray-300 text-left md:text-center">
+                    <thead className="hidden md:table-header-group">
+                        <tr>
+                            <th className="border p-2">Numerical Scale</th>
+                            <th className="border p-2">
+                                Algo plus scale (for patients not able to communicate)
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody className="md:table-row-group">
+                        {/* Row 1 */}
+                        <tr className="border block md:table-row">
+                            <td className="text-center items-center font-semibold p-2 block md:hidden border-b">Numerical Scale
+
+                            </td>
+                            <td className="border-b md:border p-2 align-top block md:table-cell" rowSpan={5}>
+                                <PainScaleRating
+                                    value={painScale.painScaleRate}
+                                    onChange={val =>
+                                        setPainScale({ ...painScale, painScaleRate: val })
+                                    }
+                                />
+                            </td>
+                            <td className="border-b p-2 block md:hidden">
+                                Pain management is satisfactory when the score remains strictly &lt; 4
+                            </td>
+                            <td className="md:border border-b p-2 text-center items-center font-semibold block md:hidden">
+                                Algo plus scale (for patients not able to communicate)
+                            </td>
+                            <td className="md:border p-2 text-left block md:table-cell">
+                                1. Facial expressions: Frowning, grimacing, wincing, clenched teeth, unexpressive.
+                            </td>
+                        </tr>
+
+                        <tr className="md:border-b block md:table-row">
+                            <td className="border p-2 text-left block md:table-cell">
+                                2. Look: Inattentive, blank stare, distant or imploring, teary eyed, closed eyes.
+                            </td>
+                        </tr>
+
+                        <tr className="md:border-b block md:table-row">
+                            <td className="border p-2 text-left block md:table-cell">
+                                3. Complaints: “Ow-ouch”, that hurts, groaning, screaming.
+                            </td>
+                        </tr>
+
+                        <tr className="md:border-b block md:table-row">
+                            <td className="border p-2 text-left block md:table-cell">
+                                4. Body position: Withdrawn, guarded, refuses to move, frozen posture.
+                            </td>
+                        </tr>
+
+                        <tr className="md:border block md:table-row">
+                            <td className="border p-2 text-left block md:table-cell">
+                                5. Atypical behavior: Agitation, aggressivity, grabbing onto something or someone.
+                            </td>
+                        </tr>
+
+                        {/* Last row */}
+                        <tr className="block md:table-row">
+                            <td className="border p-2 hidden md:table-cell">
+                                Pain management is satisfactory when the score remains strictly &lt; 4
+                            </td>
+                            <td className="border p-2 text-left block md:table-cell">
+                                Score each item YES (1) / NO (0).<br />
+                                Pain management is satisfactory when the score remains ≤ 2
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <button
                 type="submit"
-                className="hover:bg-[#1e2939] text-white px-4 py-2 rounded bg-blue-700 mt-4 duration-500"
-            >
+                className="hover:bg-[#1e2939] text-white px-4 py-2 rounded bg-blue-700 mt-4 duration-500">
                 Submit
             </button>
         </form>

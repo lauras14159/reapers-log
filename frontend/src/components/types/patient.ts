@@ -90,3 +90,16 @@ export type FunctionalField = {
   sittingPosition: SittingPosition;
   painScale: PainScale;
 };
+
+export type MotorSide = string[];
+
+export type MotorRow = {
+  name: string;
+  right: string[];
+  left: string[];
+};
+
+export type MotorTesting = {
+  motorDates: string[];
+  rows: MotorRow[];
+};

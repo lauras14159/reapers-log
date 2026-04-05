@@ -46,7 +46,7 @@ export default function PainScaleRating({ value = 0, onChange }: PainScaleProps)
             <div className="flex justify-between text-xs mt-1 ">
                 <span>No Pain</span>
                 <span>Moderate Pain</span>
-                <span>Worst Pain</span>
+                <span className="text-center">Worst Pain <br />Possible</span>
             </div>
 
             {/* Selected value */}

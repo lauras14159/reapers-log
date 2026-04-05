@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import type { Patient, MusculoskeletalEvaluation, FunctionalAssessment, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale } from "../types/patient";
+import type { Patient, MusculoskeletalEvaluation, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale, MotorRow, MotorTesting } from "../types/patient";
 import PainScaleRating from "../Scale/PainScale";
 
 const admissionOptions: Patient["admissionType"] = ["Orthopedic", "Pulmonary", "Neurologic", "Other"];
@@ -57,6 +57,29 @@ export default function PatientForm() {
         "Without weight bearing",
     ];
 
+    const createEmptySide = () => ["", "", "", "", ""];
+
+    const motorRowsTemplate: MotorRow[] = [
+        { name: "Deltoids (C5)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Biceps (C5-C6)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Wrist Extensors (C6)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Triceps (C7)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Wrist Flexors (C7)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Finger Extensors (C8)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Psoas - Hip Flex (L2)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Quads - Knee Ext (L3)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Tibialis Anterior (L4)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Adductors (L2-L3)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Gluteus (L5)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Peroneus - Ankle Ev (S1)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Triceps Surae (S2)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Abdominal", right: createEmptySide(), left: createEmptySide() },
+    ];
+    const [motorTesting, setMotorTesting] = useState<MotorTesting>({
+        motorDates: ["", "", "", "", ""],
+        rows: motorRowsTemplate,
+    });
+
     const livingAidOptions: LivingAids = ["Walker", "Crutches", "Stick", "Brace"];
 
     const sittingOptions: SittingPosition = ["Side of the bed", "On Chair"];
@@ -69,13 +92,14 @@ export default function PatientForm() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const functionalAssessment: FunctionalAssessment = {
+        const functionalAssessment = {
             patient: {
                 ...patient,
                 admissionTypeOther: patient.admissionType.includes("Other") ? admissionOther : undefined,
                 riskFactorsOther: patient.riskFactors.includes("Other") ? riskOther : undefined,
             },
             musculoskeletalEvaluation: musculoskeletal,
+            motorTesting,
         };
 
         console.log("Functional Assessment Submitted:", functionalAssessment);
@@ -247,7 +271,7 @@ export default function PatientForm() {
 
             {/* Musculoskeletal Evaluation */}
             <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Musculoskeletal Evaluation</h2>
+                <h2 className="text-xl font-semibold text-center">Musculoskeletal Evaluation</h2>
 
                 {/* Range of Motion */}
                 <div className="flex items-center gap-6">
@@ -379,69 +403,77 @@ export default function PatientForm() {
             </div>
 
             {/* Functional Assessment */}
-            <h2 className="text-xl font-semibold mt-6 mb-2">
+            <h2 className="text-xl font-semibold pt-10 text-center">
                 Functional Assessment
             </h2>
-            <h3 className="text-lg mb-2 space-x-5">
+            <h3 className="md:text-lg mb-2 space-x-5">
                 <span className="font-semibold">Scoring:</span>
                 <span>0 = Impossible </span>
                 <span>1 = Possible with difficulty </span>
                 <span>2 = Normal</span>
             </h3>
             {/* Functional Assessment Table */}
-            <div className="w-full overflow-x-auto">
-                <table className="min-w-full sm:min-w-175 w-full border-collapse border border-gray-300 text-center">
-                    <thead>
-                        <tr>
-                            <th className="border p-2 text-left">Date</th>
-                            {[...Array(5)].map((_, idx) => (
-                                <th key={idx} className="border p-2">
-                                    <input
-                                        type="date"
-                                        className="w-full text-center p-1 text-sm sm:text-base"
-                                    />
+            <div className="w-full pt-4">
+                <div className="w-full overflow-x-auto">
+                    <table className="w-full border border-gray-300 text-xs sm:text-sm md:text-base table-auto">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="border p-2 text-left whitespace-nowrap">
+                                    Date
                                 </th>
+                                {[...Array(5)].map((_, idx) => (
+                                    <th key={idx} className="border p-2">
+                                        <input
+                                            type="date"
+                                            className="w-full p-1 text-center bg-transparent outline-none text-xs sm:text-base" />
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {[
+                                "Sitting",
+                                "Standing",
+                                "Using living aid",
+                                "Going to restroom",
+                                "Going up/down stairs",
+                                "Putting shoes/socks",
+                                "Walking 10 meters"
+                            ].map(field => (
+                                <tr key={field} className="hover:bg-gray-50">
+                                    <td className="border p-2 text-left font-medium whitespace-normal">
+                                        {field}
+                                    </td>
+                                    {[...Array(5)].map((_, idx) => (
+                                        <td key={idx} className="border p-2">
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                max={2}
+                                                className="w-full p-1 text-center bg-transparent outline-none text-xs sm:text-sm"
+                                            />
+                                        </td>
+                                    ))}
+                                </tr>
                             ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {[
-                            "Sitting",
-                            "Standing",
-                            "Using living aid",
-                            "Going to restroom",
-                            "Going up/down stairs",
-                            "Putting shoes/socks",
-                            "Walking 10 meters"
-                        ].map(field => (
-                            <tr key={field}>
-                                <td className="border p-2 text-left font-medium text-sm sm:text-base">{field}</td>
+
+                            <tr className="bg-gray-100 font-semibold">
+                                <td className="border p-2 text-left whitespace-nowrap">
+                                    Total
+                                </td>
                                 {[...Array(5)].map((_, idx) => (
                                     <td key={idx} className="border p-2">
                                         <input
-                                            type="number"
-                                            min={0}
-                                            max={2}
-                                            className="w-full p-1 text-center text-sm sm:text-base"
+                                            type="text"
+                                            className="w-full p-1 text-center bg-transparent outline-none text-xs sm:text-sm"
                                         />
                                     </td>
                                 ))}
                             </tr>
-                        ))}
-
-                        <tr>
-                            <td className="border p-2 text-left font-medium text-sm sm:text-base">Total</td>
-                            {[...Array(5)].map((_, idx) => (
-                                <td key={idx} className="border p-2">
-                                    <input
-                                        type="text"
-                                        className="p-1 w-full text-center text-sm sm:text-base"
-                                    />
-                                </td>
-                            ))}
-                        </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             {/* Additional Assessments */}
             <>
@@ -461,7 +493,6 @@ export default function PatientForm() {
                         ))}
                     </div>
                 </div>
-
                 {/* Period Field */}
                 <div className="mb-4 ">
                     <label className="block font-medium mb-1">Period</label>
@@ -472,8 +503,6 @@ export default function PatientForm() {
                         onChange={e => setPeriod(e.target.value)}
                     />
                 </div>
-
-
                 {/* Gait Training */}
                 <div className="mb-4">
                     <label className="block font-medium mb-1">Gait Training</label>
@@ -587,13 +616,12 @@ export default function PatientForm() {
                     </div>
 
                 </div>
-
             </>
 
             {/* Pain Scale Table */}
             <div className="overflow-x-auto">
-                <table className="min-w-40 w-full border-collapse border border-gray-300 text-left md:text-center">
-                    <thead className="hidden md:table-header-group">
+                <table className="min-w-40 w-full border-collapse text-left md:text-center md:text-base text-sm">
+                    <thead className="hidden md:table-header-group text-lg">
                         <tr>
                             <th className="border p-2">Numerical Scale</th>
                             <th className="border p-2">
@@ -605,7 +633,7 @@ export default function PatientForm() {
                     <tbody className="md:table-row-group">
                         {/* Row 1 */}
                         <tr className="border block md:table-row">
-                            <td className="text-center items-center font-semibold p-2 block md:hidden border-b">Numerical Scale
+                            <td className="text-center items-center font-semibold p-2 block md:hidden border-b text-base">Numerical Scale
 
                             </td>
                             <td className="border-b md:border p-2 align-top block md:table-cell" rowSpan={5}>
@@ -613,13 +641,12 @@ export default function PatientForm() {
                                     value={painScale.painScaleRate}
                                     onChange={val =>
                                         setPainScale({ ...painScale, painScaleRate: val })
-                                    }
-                                />
+                                    } />
                             </td>
                             <td className="border-b p-2 block md:hidden">
                                 Pain management is satisfactory when the score remains strictly &lt; 4
                             </td>
-                            <td className="md:border border-b p-2 text-center items-center font-semibold block md:hidden">
+                            <td className="md:border border-b p-2 text-center items-center font-semibold block md:hidden text-base">
                                 Algo plus scale (for patients not able to communicate)
                             </td>
                             <td className="md:border p-2 text-left block md:table-cell">
@@ -628,13 +655,13 @@ export default function PatientForm() {
                         </tr>
 
                         <tr className="md:border-b block md:table-row">
-                            <td className="border p-2 text-left block md:table-cell">
+                            <td className="border-x p-2 text-left block md:table-cell">
                                 2. Look: Inattentive, blank stare, distant or imploring, teary eyed, closed eyes.
                             </td>
                         </tr>
 
                         <tr className="md:border-b block md:table-row">
-                            <td className="border p-2 text-left block md:table-cell">
+                            <td className="border-x p-2 text-left block md:table-cell">
                                 3. Complaints: “Ow-ouch”, that hurts, groaning, screaming.
                             </td>
                         </tr>
@@ -646,7 +673,7 @@ export default function PatientForm() {
                         </tr>
 
                         <tr className="md:border block md:table-row">
-                            <td className="border p-2 text-left block md:table-cell">
+                            <td className="border-x p-2 text-left block md:table-cell">
                                 5. Atypical behavior: Agitation, aggressivity, grabbing onto something or someone.
                             </td>
                         </tr>
@@ -664,6 +691,114 @@ export default function PatientForm() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Motor Testing */}
+            <div className="pt-10 w-full max-w-350 mx-auto space-y-4">
+                <h2 className="text-xl font-semibold text-center">Motor Testing</h2>
+
+                <div className="w-full overflow-x-auto">
+                    <table className="w-full table-fixed border  border-collapse text-xs md:text-sm">
+
+                        {/* HEADER */}
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="border p-2 w-24 md:w-44"></th>
+                                <th className="border p-2" colSpan={5}>Right</th>
+                                <th className="border p-2" colSpan={5}>Left</th>
+                            </tr>
+
+                            <tr>
+                                <th className="border p-2">Date</th>
+
+                                {/* RIGHT DATES */}
+                                {motorTesting.motorDates.map((date, i) => (
+                                    <th key={"r" + i} className="border p-1">
+                                        <input
+                                            type="date"
+                                            className="w-full p-1 text-[10px] md:text-xs"
+                                            value={date}
+                                            onChange={(e) => {
+                                                const newDates = [...motorTesting.motorDates];
+                                                newDates[i] = e.target.value;
+                                                setMotorTesting({ ...motorTesting, motorDates: newDates });
+                                            }}
+                                        />
+                                    </th>
+                                ))}
+
+                                {/* LEFT DATES */}
+                                {motorTesting.motorDates.map((date, i) => (
+                                    <th key={"l" + i} className="border p-1">
+                                        <input
+                                            type="date"
+                                            className="w-full p-1 text-[10px] md:text-xs"
+                                            value={date}
+                                            onChange={(e) => {
+                                                const newDates = [...motorTesting.motorDates];
+                                                newDates[i] = e.target.value;
+                                                setMotorTesting({ ...motorTesting, motorDates: newDates });
+                                            }}
+                                        />
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+
+                        {/* BODY */}
+                        <tbody>
+                            {motorTesting.rows.map((row, rowIndex) => (
+                                <tr key={row.name}>
+
+                                    {/* Muscle Name */}
+                                    <td className="border p-2 text-left font-medium w-40 md:w-56">
+                                        {row.name}
+                                    </td>
+
+                                    {/* RIGHT SIDE */}
+                                    {row.right.map((val, colIndex) => (
+                                        <td key={"r" + colIndex} className="border p-1">
+                                            <div className="flex justify-center">
+                                                <input
+                                                    type="text"
+                                                    className="w-10 md:w-12 p-1 text-center"
+                                                    value={val}
+                                                    onChange={(e) => {
+                                                        const newRows = [...motorTesting.rows];
+                                                        newRows[rowIndex].right[colIndex] = e.target.value;
+                                                        setMotorTesting({ ...motorTesting, rows: newRows });
+                                                    }}
+                                                />
+                                            </div>
+                                        </td>
+                                    ))}
+
+                                    {/* LEFT SIDE */}
+                                    {row.left.map((val, colIndex) => (
+                                        <td key={"l" + colIndex} className="border p-1">
+                                            <div className="flex justify-center">
+                                                <input
+                                                    type="text"
+                                                    className="w-10 md:w-12 p-1 text-center"
+                                                    value={val}
+                                                    onChange={(e) => {
+                                                        const newRows = [...motorTesting.rows];
+                                                        newRows[rowIndex].left[colIndex] = e.target.value;
+                                                        setMotorTesting({ ...motorTesting, rows: newRows });
+                                                    }}
+                                                />
+                                            </div>
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+
 
             <button
                 type="submit"

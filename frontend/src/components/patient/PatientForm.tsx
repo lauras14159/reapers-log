@@ -1,7 +1,8 @@
 
 import { useState } from "react";
-import type { Patient, MusculoskeletalEvaluation, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale, MotorRow, MotorTesting } from "../types/patient";
+import type { Patient, MusculoskeletalEvaluation, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale, MotorRow, MotorTesting, RespiratoryTest } from "../types/patient";
 import PainScaleRating from "../Scale/PainScale";
+import CheckboxGroup from "../checkbox/CheckboxGroup";
 
 const admissionOptions: Patient["admissionType"] = ["Orthopedic", "Pulmonary", "Neurologic", "Other"];
 const riskOptions: Patient["riskFactors"] = ["Smoking", "Overweight", "Other"];
@@ -27,26 +28,29 @@ export default function PatientForm() {
     const [gaitTraining, setGaitTraining] = useState<GaitTraining>([]);
     const [livingAids, setLivingAids] = useState<LivingAids>([]);
     const [brace, setBrace] = useState<Brace>({ braceField: "" });
-
     const [algoPlus, setAlgoPlus] = useState<AlgoPlusScore>({
         algoChecked: false,
         algoPlusScore: 0,
     });
-
     const [sittingPosition, setSittingPosition] = useState<SittingPosition>([]);
     const [painScale, setPainScale] = useState<PainScale>({
         numeric: false,
         score: 0,
         painScaleRate: 0,
     });
-
-
     // Musculoskeletal evaluation state
     const [musculoskeletal, setMusculoskeletal] = useState<MusculoskeletalEvaluation>({
         rangeOfMotion: [],
         upperLimbsROM: {},
         lowerLimbsROM: {},
         spineROM: {},
+    });
+    const [respiratory, setRespiratory] = useState<RespiratoryTest>({
+        breathType: [],
+        auscultation: [],
+        cough: [],
+        secretion: [],
+        secretionColor: [],
     });
 
     const gaitOptions: GaitTraining = [
@@ -75,6 +79,34 @@ export default function PatientForm() {
         { name: "Triceps Surae (S2)", right: createEmptySide(), left: createEmptySide() },
         { name: "Abdominal", right: createEmptySide(), left: createEmptySide() },
     ];
+    const breathOptions: RespiratoryTest["breathType"] = [
+        "Abdominal",
+        "Thoracic",
+        "Superficial",
+        "Respirator",
+    ];
+    const auscultationOptions: RespiratoryTest["auscultation"] = [
+        "Wheezing",
+        "Crepitus",
+        "Snoring",
+    ];
+    const coughOptions: RespiratoryTest["cough"] = [
+        "Productive",
+        "Greasy",
+        "Dry",
+    ];
+    const secretionOptions: RespiratoryTest["secretion"] = [
+        "No secretion",
+        "Expectorated",
+        "Aspirated",
+        "Swallowed",
+    ];
+    const colorOptions: RespiratoryTest["secretionColor"] = [
+        "Bloodshed",
+        "White",
+        "Yellow",
+        "Green",
+    ];
     const [motorTesting, setMotorTesting] = useState<MotorTesting>({
         motorDates: ["", "", "", "", ""],
         rows: motorRowsTemplate,
@@ -100,6 +132,7 @@ export default function PatientForm() {
             },
             musculoskeletalEvaluation: musculoskeletal,
             motorTesting,
+            respiratoryTest: respiratory,
         };
 
         console.log("Functional Assessment Submitted:", functionalAssessment);
@@ -796,9 +829,60 @@ export default function PatientForm() {
                 </div>
             </div>
 
+            {/* Respiratory Test */}
+            <div className="pt-10 space-y-6">
+                <h2 className="text-xl font-semibold text-center">
+                    Respiratory Test
+                </h2>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
 
+                    <CheckboxGroup
+                        title="Breathing Type"
+                        options={breathOptions}
+                        values={respiratory.breathType}
+                        onChange={(val) =>
+                            setRespiratory({ ...respiratory, breathType: val as RespiratoryTest["breathType"] })
+                        }
+                    />
 
+                    <CheckboxGroup
+                        title="Auscultation"
+                        options={auscultationOptions}
+                        values={respiratory.auscultation}
+                        onChange={(val) =>
+                            setRespiratory({ ...respiratory, auscultation: val as RespiratoryTest["auscultation"] })
+                        }
+                    />
+
+                    <CheckboxGroup
+                        title="Cough"
+                        options={coughOptions}
+                        values={respiratory.cough}
+                        onChange={(val) =>
+                            setRespiratory({ ...respiratory, cough: val as RespiratoryTest["cough"] })
+                        }
+                    />
+
+                    <CheckboxGroup
+                        title="Secretion"
+                        options={secretionOptions}
+                        values={respiratory.secretion}
+                        onChange={(val) =>
+                            setRespiratory({ ...respiratory, secretion: val as RespiratoryTest["secretion"] })
+                        }
+                    />
+
+                    <CheckboxGroup
+                        title="Secretion Color"
+                        options={colorOptions}
+                        values={respiratory.secretionColor}
+                        onChange={(val) =>
+                            setRespiratory({ ...respiratory, secretionColor: val as RespiratoryTest["secretionColor"] })
+                        }
+                    />
+                </div>
+            </div>
 
             <button
                 type="submit"

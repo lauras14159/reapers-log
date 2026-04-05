@@ -103,3 +103,11 @@ export type MotorTesting = {
   motorDates: string[];
   rows: MotorRow[];
 };
+
+export type RespiratoryTest = {
+  breathType: Array<"Abdominal" | "Thoracic" | "Superficial" | "Respirator">;
+  auscultation: Array<"Wheezing" | "Crepitus" | "Snoring">;
+  cough: Array<"Productive" | "Greasy" | "Dry">;
+  secretion: Array<"No secretion" | "Expectorated" | "Aspirated" | "Swallowed">;
+  secretionColor: Array<"Bloodshed" | "White" | "Yellow" | "Green">;
+};

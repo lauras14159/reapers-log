@@ -214,7 +214,7 @@ export default function PatientForm() {
                     </label>
                     <input
                         type="date"
-                        className="border p-3 sm:p-2 rounded w-full text-base"
+                        className="border p-3 sm:p-2 rounded w-fit md:w-full text-base"
                         value={patient.dateOfAccident}
                         onChange={e => setPatient({ ...patient, dateOfAccident: e.target.value })}
                     />
@@ -226,7 +226,7 @@ export default function PatientForm() {
                     </label>
                     <input
                         type="date"
-                        className="border p-3 sm:p-2 rounded w-full text-base"
+                        className="border p-3 sm:p-2 rounded w-fit md:w-full text-base"
                         value={patient.firstSessionDate}
                         onChange={e => setPatient({ ...patient, firstSessionDate: e.target.value })}
                     />
@@ -238,7 +238,7 @@ export default function PatientForm() {
                     </label>
                     <input
                         type="time"
-                        className="border p-3 sm:p-2 rounded w-full text-base"
+                        className="border p-3 sm:p-2 rounded w-fit md:w-full text-base"
                         value={patient.time}
                         onChange={e => setPatient({ ...patient, time: e.target.value })}
                     />
@@ -947,7 +947,7 @@ export default function PatientForm() {
                                     className="block md:table-row md:border-0"
                                 >
                                     {/* MOBILE TITLE */}
-                                    <td className="md:hidden font-semibold p-2 text-center">
+                                    <td className="md:hidden font-semibold p-2 text-center flex justify-center">
                                         {index + 1}
                                     </td>
 
@@ -987,7 +987,7 @@ export default function PatientForm() {
                                     </td>
 
                                     {/* Prioritization */}
-                                    <td className="block md:table-cell border-t md:border p-2 first:border-t-0">
+                                    <td className="block md:table-cell border-t md:border p-2 first:border-t-0 border-b">
                                         <p className="md:hidden text-xs font-semibold mb-1">
                                             Prioritization
                                         </p>
@@ -1008,11 +1008,13 @@ export default function PatientForm() {
                 </div>
             </div>
 
-            <button
-                type="submit"
-                className="hover:bg-[#1e2939] text-white px-4 py-2 rounded bg-blue-700 mt-4 duration-500">
-                Submit
-            </button>
+            <div className="md:justify-start justify-center flex">
+                <button
+                    type="submit"
+                    className="hover:bg-[#1e2939] text-white py-2 bg-blue-700 rounded mt-4 duration-500 max-w-xs md:max-w-40 w-full">
+                    Submit
+                </button>
+            </div>
         </form>
     );
 }

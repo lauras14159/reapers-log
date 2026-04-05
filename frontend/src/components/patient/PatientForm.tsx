@@ -208,29 +208,37 @@ export default function PatientForm() {
 
             {/* Dates & Time */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                    <label className="block font-medium mb-1">Date of surgery / accident</label>
+                <div className="flex flex-col">
+                    <label className="block font-medium mb-1 text-sm sm:text-base">
+                        Date of surgery / accident
+                    </label>
                     <input
                         type="date"
-                        className="border p-2 rounded w-full"
+                        className="border p-3 sm:p-2 rounded w-full text-base"
                         value={patient.dateOfAccident}
                         onChange={e => setPatient({ ...patient, dateOfAccident: e.target.value })}
                     />
                 </div>
-                <div>
-                    <label className="block font-medium mb-1">First Session Date</label>
+
+                <div className="flex flex-col">
+                    <label className="block font-medium mb-1 text-sm sm:text-base">
+                        First Session Date
+                    </label>
                     <input
                         type="date"
-                        className="border p-2 rounded w-full"
+                        className="border p-3 sm:p-2 rounded w-full text-base"
                         value={patient.firstSessionDate}
                         onChange={e => setPatient({ ...patient, firstSessionDate: e.target.value })}
                     />
                 </div>
-                <div>
-                    <label className="block font-medium mb-1">Time</label>
+
+                <div className="flex flex-col">
+                    <label className="block font-medium mb-1 text-sm sm:text-base">
+                        Time
+                    </label>
                     <input
                         type="time"
-                        className="border p-2 rounded w-full"
+                        className="border p-3 sm:p-2 rounded w-full text-base"
                         value={patient.time}
                         onChange={e => setPatient({ ...patient, time: e.target.value })}
                     />
@@ -464,7 +472,7 @@ export default function PatientForm() {
             {/* Functional Assessment Table */}
             <div className="w-full pt-4">
                 <div className="w-full overflow-x-auto">
-                    <table className="w-full border border-gray-300 text-xs sm:text-sm md:text-base table-auto">
+                    <table className="w-full border text-xs sm:text-sm md:text-base table-auto">
                         <thead className="">
                             <tr>
                                 <th className="border p-2 text-left whitespace-nowrap">
@@ -490,7 +498,7 @@ export default function PatientForm() {
                                 "Putting shoes/socks",
                                 "Walking 10 meters"
                             ].map(field => (
-                                <tr key={field} className="hover:bg-gray-50">
+                                <tr key={field}>
                                     <td className="border p-2 text-left font-medium whitespace-normal">
                                         {field}
                                     </td>
@@ -745,13 +753,14 @@ export default function PatientForm() {
             <div className="pt-10 w-full max-w-350 mx-auto space-y-4">
                 <h2 className="text-xl font-semibold text-center">Motor Testing</h2>
 
-                <div className="w-full overflow-x-auto">
-                    <table className="w-full table-fixed border  border-collapse text-xs md:text-sm">
+                {/* Scroll only on mobile */}
+                <div className="w-full overflow-x-auto md:overflow-visible">
+                    <table className="min-w-250 md:min-w-0 w-full md:table-fixed border border-collapse text-xs md:text-sm">
 
                         {/* HEADER */}
-                        <thead className="">
+                        <thead>
                             <tr>
-                                <th className="border p-2 w-24 md:w-44"></th>
+                                <th className="border p-2 w-28 md:w-44"></th>
                                 <th className="border p-2" colSpan={5}>Right</th>
                                 <th className="border p-2 border-l-4 border-l-black" colSpan={5}>Left</th>
                             </tr>
@@ -759,12 +768,11 @@ export default function PatientForm() {
                             <tr>
                                 <th className="border p-2">Date</th>
 
-                                {/* RIGHT DATES */}
                                 {motorTesting.motorDates.map((date, i) => (
-                                    <th key={"r" + i} className="border p-1">
+                                    <th key={"r" + i} className="border p-2 align-middle">
                                         <input
                                             type="date"
-                                            className="w-full p-1 text-[10px] md:text-xs"
+                                            className="w-full p-1 text-xs"
                                             value={date}
                                             onChange={(e) => {
                                                 const newDates = [...motorTesting.motorDates];
@@ -775,15 +783,15 @@ export default function PatientForm() {
                                     </th>
                                 ))}
 
-                                {/* LEFT DATES */}
                                 {motorTesting.motorDates.map((date, i) => (
                                     <th
                                         key={"l" + i}
-                                        className={`border p-1 ${i === 0 ? "border-l-4 border-l-black" : ""}`}
+                                        className={`border p-2 align-middle ${i === 0 ? "border-l-4 border-l-black" : ""
+                                            }`}
                                     >
                                         <input
                                             type="date"
-                                            className="w-full p-1 text-[10px] md:text-xs"
+                                            className="w-full p-1 text-xs"
                                             value={date}
                                             onChange={(e) => {
                                                 const newDates = [...motorTesting.motorDates];
@@ -801,21 +809,24 @@ export default function PatientForm() {
                             {motorTesting.rows.map((row, rowIndex) => (
                                 <tr
                                     key={row.name}
-                                    className={row.name.includes("Psoas") ? "border-t-4 border-t-black" : ""}
+                                    className={
+                                        row.name.includes("Psoas")
+                                            ? "border-t-4 border-t-black"
+                                            : ""
+                                    }
                                 >
-
-                                    {/* Muscle Name */}
-                                    <td className="border p-2 text-left font-medium w-40 md:w-56">
+                                    {/* Muscle */}
+                                    <td className="border p-2 text-left font-medium align-middle wrap-break-word">
                                         {row.name}
                                     </td>
 
-                                    {/* RIGHT SIDE */}
+                                    {/* RIGHT */}
                                     {row.right.map((val, colIndex) => (
-                                        <td key={"r" + colIndex} className="border p-1">
+                                        <td key={"r" + colIndex} className="border p-2 align-middle">
                                             <div className="flex justify-center">
                                                 <input
                                                     type="text"
-                                                    className="w-10 md:w-12 p-1 text-center"
+                                                    className="w-full max-w-15 p-1 text-center"
                                                     value={val}
                                                     onChange={(e) => {
                                                         const newRows = [...motorTesting.rows];
@@ -827,16 +838,17 @@ export default function PatientForm() {
                                         </td>
                                     ))}
 
-                                    {/* LEFT SIDE */}
+                                    {/* LEFT */}
                                     {row.left.map((val, colIndex) => (
                                         <td
                                             key={"l" + colIndex}
-                                            className={`border p-1 ${colIndex === 0 ? "border-l-4 border-l-black" : ""}`}
+                                            className={`border p-2 align-middle ${colIndex === 0 ? "border-l-4 border-l-black" : ""
+                                                }`}
                                         >
                                             <div className="flex justify-center">
                                                 <input
                                                     type="text"
-                                                    className="w-10 md:w-12 p-1 text-center"
+                                                    className="w-full max-w-15 p-1 text-center"
                                                     value={val}
                                                     onChange={(e) => {
                                                         const newRows = [...motorTesting.rows];
@@ -850,6 +862,7 @@ export default function PatientForm() {
                                 </tr>
                             ))}
                         </tbody>
+
                     </table>
                 </div>
             </div>
@@ -910,16 +923,14 @@ export default function PatientForm() {
             </div>
 
             {/* Treatment Plan */}
-            <div className=" space-y-4">
-                <h2 className="text-xl font-semibold text-center">
-                    Treatment Plan
-                </h2>
+            <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-center">Treatment Plan</h2>
 
                 <div className="w-full overflow-x-auto">
-                    <table className="w-full border border-gray-300 table-auto text-sm md:text-base">
+                    <table className="w-full table-auto text-sm md:text-base border">
 
-                        {/* HEADER */}
-                        <thead className=" hidden md:table-header-group">
+                        {/* HEADER (desktop only) */}
+                        <thead className="hidden md:table-header-group">
                             <tr>
                                 <th className="border p-2 w-10">#</th>
                                 <th className="border p-2">Assessment Findings</th>
@@ -933,20 +944,20 @@ export default function PatientForm() {
                             {treatmentPlan.assessmentFindings.map((_, index) => (
                                 <tr
                                     key={index}
-                                    className="block md:table-row border md:border-0 mb-4 md:mb-0"
+                                    className="block md:table-row md:border-0"
                                 >
                                     {/* MOBILE TITLE */}
-                                    <td className="md:hidden font-semibold p-2 ">
-                                        Row {index + 1}
+                                    <td className="md:hidden font-semibold p-2 text-center">
+                                        {index + 1}
                                     </td>
 
-                                    {/* INDEX */}
+                                    {/* INDEX (desktop only) */}
                                     <td className="hidden md:table-cell border p-2 text-center">
                                         {index + 1}
                                     </td>
 
                                     {/* Assessment */}
-                                    <td className="border p-2 block md:table-cell">
+                                    <td className="block md:table-cell border-t md:border p-2 first:border-t-0">
                                         <p className="md:hidden text-xs font-semibold mb-1">
                                             Assessment Findings
                                         </p>
@@ -955,17 +966,13 @@ export default function PatientForm() {
                                             rows={2}
                                             value={treatmentPlan.assessmentFindings[index]}
                                             onChange={(e) =>
-                                                updateTreatment(
-                                                    "assessmentFindings",
-                                                    index,
-                                                    e.target.value
-                                                )
+                                                updateTreatment("assessmentFindings", index, e.target.value)
                                             }
                                         />
                                     </td>
 
                                     {/* Goals */}
-                                    <td className="border p-2 block md:table-cell">
+                                    <td className="block md:table-cell border-t md:border p-2 first:border-t-0">
                                         <p className="md:hidden text-xs font-semibold mb-1">
                                             Goals
                                         </p>
@@ -980,20 +987,17 @@ export default function PatientForm() {
                                     </td>
 
                                     {/* Prioritization */}
-                                    <td className="border p-2 block md:table-cell">
+                                    <td className="block md:table-cell border-t md:border p-2 first:border-t-0">
                                         <p className="md:hidden text-xs font-semibold mb-1">
                                             Prioritization
                                         </p>
-                                        <textarea rows={2}
+                                        <textarea
+                                            rows={2}
                                             className="w-full p-2 resize-none"
                                             placeholder="1st, 2nd..."
                                             value={treatmentPlan.prioritization[index]}
                                             onChange={(e) =>
-                                                updateTreatment(
-                                                    "prioritization",
-                                                    index,
-                                                    e.target.value
-                                                )
+                                                updateTreatment("prioritization", index, e.target.value)
                                             }
                                         />
                                     </td>

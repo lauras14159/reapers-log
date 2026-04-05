@@ -111,3 +111,9 @@ export type RespiratoryTest = {
   secretion: Array<"No secretion" | "Expectorated" | "Aspirated" | "Swallowed">;
   secretionColor: Array<"Bloodshed" | "White" | "Yellow" | "Green">;
 };
+
+export type TreatmentPlan = {
+  assessmentFindings: string[];
+  goals: string[];
+  prioritization: string[];
+};

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import type { Patient, MusculoskeletalEvaluation, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale, MotorRow, MotorTesting, RespiratoryTest } from "../types/patient";
+import type { Patient, MusculoskeletalEvaluation, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale, MotorRow, MotorTesting, RespiratoryTest, TreatmentPlan } from "../types/patient";
 import PainScaleRating from "../Scale/PainScale";
 import CheckboxGroup from "../checkbox/CheckboxGroup";
 
@@ -121,6 +121,21 @@ export default function PatientForm() {
         setter(array.includes(option) ? array.filter(o => o !== option) : [...array, option]);
     };
 
+    const [treatmentPlan, setTreatmentPlan] = useState<TreatmentPlan>({
+        assessmentFindings: ["", "", "", "", ""],
+        goals: ["", "", "", "", ""],
+        prioritization: ["", "", "", "", ""],
+    });
+    const updateTreatment = (
+        field: keyof TreatmentPlan,
+        index: number,
+        value: string
+    ) => {
+        const updated = { ...treatmentPlan };
+        updated[field][index] = value;
+        setTreatmentPlan(updated);
+    };
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -133,6 +148,7 @@ export default function PatientForm() {
             musculoskeletalEvaluation: musculoskeletal,
             motorTesting,
             respiratoryTest: respiratory,
+            treatmentPlan
         };
 
         console.log("Functional Assessment Submitted:", functionalAssessment);
@@ -449,7 +465,7 @@ export default function PatientForm() {
             <div className="w-full pt-4">
                 <div className="w-full overflow-x-auto">
                     <table className="w-full border border-gray-300 text-xs sm:text-sm md:text-base table-auto">
-                        <thead className="bg-gray-100">
+                        <thead className="">
                             <tr>
                                 <th className="border p-2 text-left whitespace-nowrap">
                                     Date
@@ -491,7 +507,7 @@ export default function PatientForm() {
                                 </tr>
                             ))}
 
-                            <tr className="bg-gray-100 font-semibold">
+                            <tr className=" font-semibold">
                                 <td className="border p-2 text-left whitespace-nowrap">
                                     Total
                                 </td>
@@ -733,11 +749,11 @@ export default function PatientForm() {
                     <table className="w-full table-fixed border  border-collapse text-xs md:text-sm">
 
                         {/* HEADER */}
-                        <thead className="bg-gray-100">
+                        <thead className="">
                             <tr>
                                 <th className="border p-2 w-24 md:w-44"></th>
                                 <th className="border p-2" colSpan={5}>Right</th>
-                                <th className="border p-2" colSpan={5}>Left</th>
+                                <th className="border p-2 border-l-4 border-l-black" colSpan={5}>Left</th>
                             </tr>
 
                             <tr>
@@ -761,7 +777,10 @@ export default function PatientForm() {
 
                                 {/* LEFT DATES */}
                                 {motorTesting.motorDates.map((date, i) => (
-                                    <th key={"l" + i} className="border p-1">
+                                    <th
+                                        key={"l" + i}
+                                        className={`border p-1 ${i === 0 ? "border-l-4 border-l-black" : ""}`}
+                                    >
                                         <input
                                             type="date"
                                             className="w-full p-1 text-[10px] md:text-xs"
@@ -780,7 +799,10 @@ export default function PatientForm() {
                         {/* BODY */}
                         <tbody>
                             {motorTesting.rows.map((row, rowIndex) => (
-                                <tr key={row.name}>
+                                <tr
+                                    key={row.name}
+                                    className={row.name.includes("Psoas") ? "border-t-4 border-t-black" : ""}
+                                >
 
                                     {/* Muscle Name */}
                                     <td className="border p-2 text-left font-medium w-40 md:w-56">
@@ -807,7 +829,10 @@ export default function PatientForm() {
 
                                     {/* LEFT SIDE */}
                                     {row.left.map((val, colIndex) => (
-                                        <td key={"l" + colIndex} className="border p-1">
+                                        <td
+                                            key={"l" + colIndex}
+                                            className={`border p-1 ${colIndex === 0 ? "border-l-4 border-l-black" : ""}`}
+                                        >
                                             <div className="flex justify-center">
                                                 <input
                                                     type="text"
@@ -881,6 +906,101 @@ export default function PatientForm() {
                             setRespiratory({ ...respiratory, secretionColor: val as RespiratoryTest["secretionColor"] })
                         }
                     />
+                </div>
+            </div>
+
+            {/* Treatment Plan */}
+            <div className=" space-y-4">
+                <h2 className="text-xl font-semibold text-center">
+                    Treatment Plan
+                </h2>
+
+                <div className="w-full overflow-x-auto">
+                    <table className="w-full border border-gray-300 table-auto text-sm md:text-base">
+
+                        {/* HEADER */}
+                        <thead className=" hidden md:table-header-group">
+                            <tr>
+                                <th className="border p-2 w-10">#</th>
+                                <th className="border p-2">Assessment Findings</th>
+                                <th className="border p-2">Goals of the Care Plan</th>
+                                <th className="border p-2">Prioritization</th>
+                            </tr>
+                        </thead>
+
+                        {/* BODY */}
+                        <tbody>
+                            {treatmentPlan.assessmentFindings.map((_, index) => (
+                                <tr
+                                    key={index}
+                                    className="block md:table-row border md:border-0 mb-4 md:mb-0"
+                                >
+                                    {/* MOBILE TITLE */}
+                                    <td className="md:hidden font-semibold p-2 ">
+                                        Row {index + 1}
+                                    </td>
+
+                                    {/* INDEX */}
+                                    <td className="hidden md:table-cell border p-2 text-center">
+                                        {index + 1}
+                                    </td>
+
+                                    {/* Assessment */}
+                                    <td className="border p-2 block md:table-cell">
+                                        <p className="md:hidden text-xs font-semibold mb-1">
+                                            Assessment Findings
+                                        </p>
+                                        <textarea
+                                            className="w-full p-2 resize-none"
+                                            rows={2}
+                                            value={treatmentPlan.assessmentFindings[index]}
+                                            onChange={(e) =>
+                                                updateTreatment(
+                                                    "assessmentFindings",
+                                                    index,
+                                                    e.target.value
+                                                )
+                                            }
+                                        />
+                                    </td>
+
+                                    {/* Goals */}
+                                    <td className="border p-2 block md:table-cell">
+                                        <p className="md:hidden text-xs font-semibold mb-1">
+                                            Goals
+                                        </p>
+                                        <textarea
+                                            className="w-full p-2 resize-none"
+                                            rows={2}
+                                            value={treatmentPlan.goals[index]}
+                                            onChange={(e) =>
+                                                updateTreatment("goals", index, e.target.value)
+                                            }
+                                        />
+                                    </td>
+
+                                    {/* Prioritization */}
+                                    <td className="border p-2 block md:table-cell">
+                                        <p className="md:hidden text-xs font-semibold mb-1">
+                                            Prioritization
+                                        </p>
+                                        <textarea rows={2}
+                                            className="w-full p-2 resize-none"
+                                            placeholder="1st, 2nd..."
+                                            value={treatmentPlan.prioritization[index]}
+                                            onChange={(e) =>
+                                                updateTreatment(
+                                                    "prioritization",
+                                                    index,
+                                                    e.target.value
+                                                )
+                                            }
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

@@ -2,21 +2,35 @@ export type Patient = {
   id?: string;
   fullName: string;
   age: number;
-  sex: "Male" | "Female"; // radio button
+  sex: "Male" | "Female";
   dateOfAccident: string;
   firstSessionDate: string;
   time: string;
 
-  // Multiple checkboxes
   admissionType: Array<"Orthopedic" | "Pulmonary" | "Neurologic" | "Other">;
-  admissionTypeOther?: string; // optional text if "Other" is checked
+  admissionTypeOther?: string;
 
   riskFactors: Array<"Smoking" | "Overweight" | "Other">;
-  riskFactorsOther?: string; // optional text if "Other" is checked
+  riskFactorsOther?: string;
 
   indications: string;
   contraindications: string;
   precautions: string;
+
+  // Form fields
+  gaitTraining?: GaitTraining;
+  livingAids?: LivingAids;
+  brace?: Brace;
+  sittingPosition?: SittingPosition;
+  painScale?: PainScale;
+  algoPlus?: AlgoPlusScore;
+  period?: string;
+
+  // Optional assessments
+  musculoskeletal?: MusculoskeletalEvaluation;
+  motorTesting?: MotorTesting;
+  respiratory?: RespiratoryTest;
+  treatmentPlan?: TreatmentPlan;
 };
 
 export type UpperLimbsROM = {

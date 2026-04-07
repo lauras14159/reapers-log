@@ -1,8 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Header from "../components/layout/Header";
 import Dashboard from "../pages/dashboard/Dashboard";
-import PatientNew from "../pages/patient/PatientNew";
-import PatientDetail from "../pages/patient/PatientDetail";
+import PatientForm from "../components/patient/PatientForm";
 
 const AppRouter = () => {
     return (
@@ -10,9 +9,10 @@ const AppRouter = () => {
         <Routes>
             <Route element={<Header />}>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/patient/new" element={<PatientNew />} />
-                <Route path="/patient/:id" element={<PatientDetail />} />
+                <Route path="/patient/new" element={<PatientForm />} />
+                <Route path="/patient/:id" element={<PatientForm />} />
             </Route>
+
         </Routes>
     );
 };

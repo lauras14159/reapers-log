@@ -1,5 +1,7 @@
+import PatientForm from "../../components/patient/PatientForm";
+
 export default function PatientNew() {
     return (
-        <div>PatientNew</div>
+        <PatientForm />
     )
 }

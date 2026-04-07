@@ -3,9 +3,10 @@ import { useState } from "react";
 import type { Patient, MusculoskeletalEvaluation, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale, MotorRow, MotorTesting, RespiratoryTest, TreatmentPlan } from "../types/patient";
 import PainScaleRating from "../Scale/PainScale";
 import CheckboxGroup from "../checkbox/CheckboxGroup";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { usePatientStore } from "../hooks/usePatients";
 
-const admissionOptions: Patient["admissionType"] = ["Orthopedic", "Pulmonary", "Neurologic", "Other"];
-const riskOptions: Patient["riskFactors"] = ["Smoking", "Overweight", "Other"];
 export default function PatientForm() {
     // Patient state
     const [patient, setPatient] = useState<Patient>({
@@ -21,6 +22,9 @@ export default function PatientForm() {
         contraindications: "",
         precautions: "",
     });
+
+    const admissionOptions: Patient["admissionType"] = ["Orthopedic", "Pulmonary", "Neurologic", "Other"];
+    const riskOptions: Patient["riskFactors"] = ["Smoking", "Overweight", "Other"];
 
     const [admissionOther, setAdmissionOther] = useState("");
     const [riskOther, setRiskOther] = useState("");
@@ -126,6 +130,34 @@ export default function PatientForm() {
         goals: ["", "", "", "", ""],
         prioritization: ["", "", "", "", ""],
     });
+
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const isEdit = !!id;
+
+    const { patients, savePatient, currentPatient } = usePatientStore();
+
+    useEffect(() => {
+        if (!id) return;
+
+        const existingPatient = patients.find((p) => p.id === id);
+
+        if (existingPatient) {
+            setPatient({
+                ...existingPatient,
+                admissionType: existingPatient.admissionType || [],
+                riskFactors: existingPatient.riskFactors || [],
+                // if you have other array fields, ensure they exist too
+            });
+        } else if (currentPatient) {
+            setPatient({
+                ...currentPatient,
+                admissionType: currentPatient.admissionType || [],
+                riskFactors: currentPatient.riskFactors || [],
+            });
+        }
+    }, [id, patients, currentPatient]);
+
     const updateTreatment = (
         field: keyof TreatmentPlan,
         index: number,
@@ -139,20 +171,16 @@ export default function PatientForm() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const functionalAssessment = {
-            patient: {
-                ...patient,
-                admissionTypeOther: patient.admissionType.includes("Other") ? admissionOther : undefined,
-                riskFactorsOther: patient.riskFactors.includes("Other") ? riskOther : undefined,
-            },
-            musculoskeletalEvaluation: musculoskeletal,
-            motorTesting,
-            respiratoryTest: respiratory,
-            treatmentPlan
+        const finalPatient = {
+            ...patient,
+            id: isEdit ? patient.id : Date.now().toString(),
+            admissionTypeOther: patient.admissionType.includes("Other") ? admissionOther : undefined,
+            riskFactorsOther: patient.riskFactors.includes("Other") ? riskOther : undefined,
         };
 
-        console.log("Functional Assessment Submitted:", functionalAssessment);
-        alert("Form submitted! Check console for object.");
+        savePatient(finalPatient);
+
+        navigate("/");
     };
 
     return (
@@ -1011,8 +1039,9 @@ export default function PatientForm() {
             <div className="md:justify-start justify-center flex">
                 <button
                     type="submit"
-                    className="hover:bg-[#1e2939] text-white py-2 bg-blue-700 rounded mt-4 duration-500 max-w-xs md:max-w-40 w-full">
-                    Submit
+                    className="hover:bg-[#1e2939] text-white py-2 bg-blue-700 rounded mt-4 duration-500 max-w-xs md:max-w-40 w-full"
+                >
+                    {isEdit ? "Save" : "Submit"}
                 </button>
             </div>
         </form>

@@ -1,7 +1,7 @@
 import type { Patient } from '../types/patient';
 import { usePatientStore } from '../hooks/usePatients';
-import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Bin } from '../../svg/bin';
 
 type PatientCardProps = {
     patient: Pick<Patient, 'id' | 'fullName' | 'admissionType' | 'admissionTypeOther'>;
@@ -16,7 +16,7 @@ export default function PatientCard({ patient }: PatientCardProps) {
     };
 
     return (
-        <div className="flex flex-row sm:items-center sm:justify-between justify-center py-2 px-4 border-b border-gray-800 text-sm gap-2 sm:gap-4">
+        <div className="flex flex-row sm:items-center sm:justify-between justify-center py-5 md:py-2 px-4 border-b border-gray-800 text-sm gap-2 sm:gap-4">
             {/* Patient Info */}
             <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 flex-1 ">
                 <p className="w-20 shrink-0">{patient.id}</p>
@@ -30,7 +30,7 @@ export default function PatientCard({ patient }: PatientCardProps) {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2 shrink-0 justify-end py-5 md:py-2">
+            <div className="flex gap-x-5 shrink-0 justify-end">
                 <button
                     onClick={() => handleView()}
                     className="flex items-center gap-1 px-3 py-1 rounded-md border border-gray-800 font-medium cursor-pointer"
@@ -40,9 +40,8 @@ export default function PatientCard({ patient }: PatientCardProps) {
 
                 <button
                     onClick={() => deletePatient(patient.id!)}
-                    className="flex items-center justify-center w-9 h-9 text-red-600 cursor-pointer"
-                >
-                    <Trash2 size={16} />
+                    className="flex items-center justify-center cursor-pointer">
+                    <Bin width={20} fill="#D2042D" />
                 </button>
             </div>
         </div>

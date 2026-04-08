@@ -298,11 +298,11 @@ export default function PatientForm() {
                         onChange={e => setPatient({ ...patient, fullName: e.target.value })}
                     />
                 </div>
-                <div>
+                <div className="min-w-0">
                     <label className="block font-medium mb-1">Date of Birth</label>
                     <input
                         type="date"
-                        className="border p-2 rounded w-full md:w-fit"
+                        className="border p-2 rounded w-full min-w-0"
                         value={patient.dateOfBirth}
                         onChange={e => setPatient({ ...patient, dateOfBirth: e.target.value })}
                     />

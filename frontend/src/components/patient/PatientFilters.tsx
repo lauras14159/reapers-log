@@ -41,7 +41,7 @@ export default function PatientFilters({
                     onChange={(e) =>
                         onSortChange(e.target.value as "name" | "date")
                     }
-                    className="px-3 py-2 pr-10 w-full border rounded appearance-none bg-white"
+                    className="px-3 py-2 pr-10 w-full border rounded appearance-none"
                 >
                     <option value="name">Sort A → Z</option>
                     <option value="date">Sort by First Session</option>

@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IPatient extends Document {
   fullName: string;
   age: number;
+  dateOfBirth: string;
   sex: "Male" | "Female";
   dateOfAccident: string;
   firstSessionDate: string;
@@ -18,25 +19,26 @@ export interface IPatient extends Document {
   contraindications: string;
   precautions: string;
 
-  gaitTraining?: Array<
-    | "Full weight bearing"
-    | "Inside the room"
-    | "Partial weight bearing"
-    | "Outside the room"
-    | "Without weight bearing"
-  >;
+  history: string;
 
-  livingAids?: Array<"Walker" | "Crutches" | "Stick" | "Brace">;
+  gaitTraining?: string[];
+  livingAids?: string[];
   brace?: { braceField: string };
-  sittingPosition?: Array<"Side of the bed" | "On Chair">;
+  sittingPosition?: string[];
   painScale?: { numeric: boolean; score?: number; painScaleRate: number };
-  algoPlus?: { algoChecked: boolean; algoPlusScore: number };
+
+  algoPlus?: {
+    algoChecked: boolean;
+    algoPlusScore: number;
+    algoPlusScale: string[];
+  };
+
   period?: string;
 
   musculoskeletal?: {
     rangeOfMotion: Array<"Right" | "Left">;
-    upperLimbsROM?: { shoulder?: string; elbow?: string };
-    lowerLimbsROM?: { hip?: string; knee?: string };
+    upperLimbsROM?: { shoulder?: string; elbow?: string; wrist?: string };
+    lowerLimbsROM?: { hip?: string; knee?: string; ankle?: string };
     spineROM?: { cervical?: string; lumbar?: string };
   };
 
@@ -46,13 +48,11 @@ export interface IPatient extends Document {
   };
 
   respiratory?: {
-    breathType: Array<"Abdominal" | "Thoracic" | "Superficial" | "Respirator">;
-    auscultation: Array<"Wheezing" | "Crepitus" | "Snoring">;
-    cough: Array<"Productive" | "Greasy" | "Dry">;
-    secretion: Array<
-      "No secretion" | "Expectorated" | "Aspirated" | "Swallowed"
-    >;
-    secretionColor: Array<"Bloodshed" | "White" | "Yellow" | "Green">;
+    breathType: string[];
+    auscultation: string[];
+    cough: string[];
+    secretion: string[];
+    secretionColor: string[];
   };
 
   treatmentPlan?: {
@@ -60,12 +60,23 @@ export interface IPatient extends Document {
     goals: string[];
     prioritization: string[];
   };
+
+  ptSchedule?: {
+    weekNumber: number;
+    date?: string;
+    sessions: {
+      sessionNumber: number;
+      note: string;
+    }[];
+  }[];
 }
 
 const patientSchema: Schema = new Schema({
   fullName: { type: String, required: true },
   age: { type: Number, required: true },
+  dateOfBirth: { type: String, required: true },
   sex: { type: String, enum: ["Male", "Female"], required: true },
+
   dateOfAccident: { type: String, required: true },
   firstSessionDate: { type: String, required: true },
   time: { type: String, required: true },
@@ -75,49 +86,60 @@ const patientSchema: Schema = new Schema({
     enum: ["Orthopedic", "Pulmonary", "Neurologic", "Other"],
     required: true,
   },
-  admissionTypeOther: { type: String },
+  admissionTypeOther: String,
 
   riskFactors: {
     type: [String],
     enum: ["Smoking", "Overweight", "Other"],
     required: true,
   },
-  riskFactorsOther: { type: String },
+  riskFactorsOther: String,
 
   indications: { type: String, required: true },
   contraindications: { type: String, required: true },
   precautions: { type: String, required: true },
 
-  gaitTraining: {
-    type: [String],
-    enum: [
-      "Full weight bearing",
-      "Inside the room",
-      "Partial weight bearing",
-      "Outside the room",
-      "Without weight bearing",
-    ],
+  history: { type: String, required: true },
+
+  gaitTraining: [String],
+  livingAids: [String],
+
+  brace: {
+    braceField: String,
   },
 
-  livingAids: {
-    type: [String],
-    enum: ["Walker", "Crutches", "Stick", "Brace"],
-  },
-  brace: { braceField: { type: String } },
-  sittingPosition: { type: [String], enum: ["Side of the bed", "On Chair"] },
+  sittingPosition: [String],
+
   painScale: {
     numeric: Boolean,
     score: Number,
-    painScaleRate: { type: Number, required: true },
+    painScaleRate: Number,
   },
-  algoPlus: { algoChecked: Boolean, algoPlusScore: Number },
-  period: { type: String },
+
+  algoPlus: {
+    algoChecked: Boolean,
+    algoPlusScore: Number,
+    algoPlusScale: [String],
+  },
+
+  period: String,
 
   musculoskeletal: {
     rangeOfMotion: { type: [String], enum: ["Right", "Left"] },
-    upperLimbsROM: { shoulder: String, elbow: String },
-    lowerLimbsROM: { hip: String, knee: String },
-    spineROM: { cervical: String, lumbar: String },
+    upperLimbsROM: {
+      shoulder: String,
+      elbow: String,
+      wrist: String,
+    },
+    lowerLimbsROM: {
+      hip: String,
+      knee: String,
+      ankle: String,
+    },
+    spineROM: {
+      cervical: String,
+      lumbar: String,
+    },
   },
 
   motorTesting: {
@@ -132,20 +154,11 @@ const patientSchema: Schema = new Schema({
   },
 
   respiratory: {
-    breathType: {
-      type: [String],
-      enum: ["Abdominal", "Thoracic", "Superficial", "Respirator"],
-    },
-    auscultation: { type: [String], enum: ["Wheezing", "Crepitus", "Snoring"] },
-    cough: { type: [String], enum: ["Productive", "Greasy", "Dry"] },
-    secretion: {
-      type: [String],
-      enum: ["No secretion", "Expectorated", "Aspirated", "Swallowed"],
-    },
-    secretionColor: {
-      type: [String],
-      enum: ["Bloodshed", "White", "Yellow", "Green"],
-    },
+    breathType: [String],
+    auscultation: [String],
+    cough: [String],
+    secretion: [String],
+    secretionColor: [String],
   },
 
   treatmentPlan: {
@@ -153,6 +166,19 @@ const patientSchema: Schema = new Schema({
     goals: [String],
     prioritization: [String],
   },
+
+  ptSchedule: [
+    {
+      weekNumber: Number,
+      date: String,
+      sessions: [
+        {
+          sessionNumber: Number,
+          note: String,
+        },
+      ],
+    },
+  ],
 });
 
 export default mongoose.model<IPatient>("Patient", patientSchema);

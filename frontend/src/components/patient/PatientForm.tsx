@@ -302,7 +302,7 @@ export default function PatientForm() {
                     <label className="block font-medium mb-1">Date of Birth</label>
                     <input
                         type="date"
-                        className="border p-2 rounded w-full"
+                        className="border p-2 rounded w-full md:w-fit"
                         value={patient.dateOfBirth}
                         onChange={e => setPatient({ ...patient, dateOfBirth: e.target.value })}
                     />
@@ -1227,7 +1227,7 @@ export default function PatientForm() {
             </div>
 
             {/* Respiratory Test */}
-            <div className="pt-10 space-y-6">
+            <div className="pt-10 space-y-6 overflow-x-scroll">
                 <h2 className="text-xl font-semibold text-center">
                     Respiratory Test
                 </h2>

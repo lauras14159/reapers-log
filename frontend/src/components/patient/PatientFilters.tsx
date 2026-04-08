@@ -56,6 +56,7 @@ export default function PatientFilters({
 
             {/* Filter by Date */}
             <input
+                placeholder="MM-DD-YYYY"
                 type="date"
                 value={filterDate}
                 onChange={(e) => onFilterDateChange(e.target.value)}

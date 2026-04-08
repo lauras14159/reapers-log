@@ -31,17 +31,18 @@ export default function PatientCard({ patient }: PatientCardProps) {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-x-5 shrink-0 justify-end">
+            <div className="flex gap-x-3 shrink-0 justify-end items-center">
                 <button
                     onClick={() => handleView()}
-                    className="flex items-center gap-1 px-3 py-1 rounded-md border border-gray-800 font-medium cursor-pointer"
+                    className="flex items-center gap-1 px-3 h-10 rounded-md border border-gray-800 font-medium leading-none cursor-pointer hover:bg-gray-800 hover:text-white transition"
                 >
                     View
                 </button>
 
                 <button
                     onClick={() => deletePatient(patient.id!)}
-                    className="flex items-center justify-center cursor-pointer">
+                    className="flex items-center justify-center h-10 w-10 cursor-pointer"
+                >
                     <Bin width={20} fill="#D2042D" />
                 </button>
             </div>

@@ -2,6 +2,7 @@ export type Patient = {
   id?: string;
   fullName: string;
   age: number;
+  dateOfBirth: string;
   sex: "Male" | "Female";
   dateOfAccident: string;
   firstSessionDate: string;
@@ -17,6 +18,8 @@ export type Patient = {
   contraindications: string;
   precautions: string;
 
+  history: string;
+
   // Form fields
   gaitTraining?: GaitTraining;
   livingAids?: LivingAids;
@@ -31,15 +34,20 @@ export type Patient = {
   motorTesting?: MotorTesting;
   respiratory?: RespiratoryTest;
   treatmentPlan?: TreatmentPlan;
+
+  // Schedule of PT sessions
+  ptSchedule?: PTSchedule;
 };
 
 export type UpperLimbsROM = {
   shoulder?: string;
   elbow?: string;
+  wrist?: string;
 };
 export type LowerLimbsROM = {
   hip?: string;
   knee?: string;
+  ankle?: string;
 };
 export type SpineROM = {
   cervical?: string;
@@ -73,9 +81,18 @@ export type Brace = {
   braceField: string;
 };
 
+export type AlgoplusScale = Array<
+  | "Facial expressions"
+  | "Look"
+  | "Complaints"
+  | "Body position"
+  | "Atypical behavior"
+>;
+
 export type AlgoPlusScore = {
   algoChecked: boolean;
   algoPlusScore: number;
+  algoPlusScale: AlgoplusScale;
 };
 
 export type SittingPosition = Array<"Side of the bed" | "On Chair">;
@@ -92,7 +109,7 @@ export type FunctionalField = {
   standing: NumericScore;
   usingLivingAid: NumericScore;
   goingToRestroom: NumericScore;
-  stairs: NumericScore; // going up/down stairs
+  stairs: NumericScore;
   puttingShoesOrSocks: NumericScore;
   walking10Meters: NumericScore;
   total?: string;
@@ -131,3 +148,18 @@ export type TreatmentPlan = {
   goals: string[];
   prioritization: string[];
 };
+
+// A single PT session with just a note
+export type PTSession = {
+  sessionNumber: number;
+  note: string;
+};
+
+// A single week with multiple sessions
+export type PTWeek = {
+  weekNumber: number;
+  date?: string;
+  sessions: PTSession[];
+};
+
+export type PTSchedule = PTWeek[];

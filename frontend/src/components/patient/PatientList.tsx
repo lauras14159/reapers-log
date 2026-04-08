@@ -20,14 +20,15 @@ export default function PatientList() {
             admissionType: ["Neurologic", "Other"] as const,
             admissionTypeOther: "Special case",
         },
-    ] as Pick<Patient, 'id' | 'fullName' | 'admissionType' | 'admissionTypeOther'>[];
+    ] as unknown as Pick<Patient, 'id' | 'fullName' | 'firstSessionDate' | 'admissionType' | 'admissionTypeOther'>[];
 
     return (
         <div className="overflow-hidden ">
             {/* Header Row */}
             <div className="hidden sm:flex items-center gap-4 p-4 text-sm font-semibold border-b border-gray-800">
                 <p className="w-20 shrink-0">ID</p>
-                <p className="w-32">Name</p>
+                <p className="w-36">Name</p>
+                <p className="w-40">First Session Date</p>
                 <p>Admission Type</p>
             </div>
 

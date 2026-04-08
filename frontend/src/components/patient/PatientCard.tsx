@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bin } from '../../svg/bin';
 
 type PatientCardProps = {
-    patient: Pick<Patient, 'id' | 'fullName' | 'admissionType' | 'admissionTypeOther'>;
+    patient: Pick<Patient, 'id' | 'fullName' | 'firstSessionDate' | 'admissionType' | 'admissionTypeOther'>;
 };
 
 export default function PatientCard({ patient }: PatientCardProps) {
@@ -20,7 +20,8 @@ export default function PatientCard({ patient }: PatientCardProps) {
             {/* Patient Info */}
             <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 flex-1 ">
                 <p className="w-20 shrink-0">{patient.id}</p>
-                <h3 className="font-medium w-32">{patient.fullName}</h3>
+                <h3 className="font-medium w-36">{patient.fullName}</h3>
+                <p className='w-40'>{patient.firstSessionDate}</p>
                 <p>
                     {patient.admissionType.join(', ')}
                     {patient.admissionType.includes("Other") && patient.admissionTypeOther

@@ -1,17 +1,20 @@
 
 import { useState } from "react";
-import type { Patient, MusculoskeletalEvaluation, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale, MotorRow, MotorTesting, RespiratoryTest, TreatmentPlan } from "../types/patient";
+import type { Patient, MusculoskeletalEvaluation, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale, MotorRow, MotorTesting, RespiratoryTest, TreatmentPlan, PTWeek } from "../types/patient";
 import PainScaleRating from "../Scale/PainScale";
 import CheckboxGroup from "../checkbox/CheckboxGroup";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { usePatientStore } from "../hooks/usePatients";
+import { Bin } from "../../svg/bin";
+import { ArrowDown } from "../../svg/arrowDown";
 
 export default function PatientForm() {
     // Patient state
     const [patient, setPatient] = useState<Patient>({
         fullName: "",
         age: 0,
+        dateOfBirth: "",
         sex: "Male",
         dateOfAccident: "",
         firstSessionDate: "",
@@ -21,6 +24,7 @@ export default function PatientForm() {
         indications: "",
         contraindications: "",
         precautions: "",
+        history: "",
     });
 
     const admissionOptions: Patient["admissionType"] = ["Orthopedic", "Pulmonary", "Neurologic", "Other"];
@@ -35,6 +39,7 @@ export default function PatientForm() {
     const [algoPlus, setAlgoPlus] = useState<AlgoPlusScore>({
         algoChecked: false,
         algoPlusScore: 0,
+        algoPlusScale: [],
     });
     const [sittingPosition, setSittingPosition] = useState<SittingPosition>([]);
     const [painScale, setPainScale] = useState<PainScale>({
@@ -78,6 +83,7 @@ export default function PatientForm() {
         { name: "Quads - Knee Ext (L3)", right: createEmptySide(), left: createEmptySide() },
         { name: "Tibialis Anterior (L4)", right: createEmptySide(), left: createEmptySide() },
         { name: "Adductors (L2-L3)", right: createEmptySide(), left: createEmptySide() },
+        { name: "Abductors", right: createEmptySide(), left: createEmptySide() },
         { name: "Gluteus (L5)", right: createEmptySide(), left: createEmptySide() },
         { name: "Peroneus - Ankle Ev (S1)", right: createEmptySide(), left: createEmptySide() },
         { name: "Triceps Surae (S2)", right: createEmptySide(), left: createEmptySide() },
@@ -116,6 +122,93 @@ export default function PatientForm() {
         rows: motorRowsTemplate,
     });
 
+    // PT Sessions state
+    const [ptSessions, setPtSessions] = useState<PTWeek[]>([
+        {
+            weekNumber: 1,
+            date: "",
+            sessions: [{
+                note: "",
+                sessionNumber: 1
+            }],
+        },
+    ]);
+    // Function to add a new week
+    const addWeek = () => {
+        setPtSessions([
+            ...ptSessions,
+            {
+                weekNumber: ptSessions.length + 1,
+                date: "",
+                sessions: [{ note: "", sessionNumber: 1 }],
+            },
+        ]);
+    };
+    // Function to add a session to a specific week
+    const addSession = (weekIndex: number) => {
+        const updated = [...ptSessions];
+        updated[weekIndex].sessions.push({
+            note: "",
+            sessionNumber: 0
+        });
+        setPtSessions(updated);
+    };
+    const updateSession = (weekIndex: number, sessionIndex: number, value: string) => {
+        const updated = [...ptSessions];
+        updated[weekIndex].sessions[sessionIndex].note = value;
+        setPtSessions(updated);
+    };
+    const updateWeekDate = (weekIndex: number, value: string) => {
+        const updated = [...ptSessions];
+        updated[weekIndex].date = value;
+        setPtSessions(updated);
+    };
+    const normalizeWeeks = (weeks: PTWeek[]): PTWeek[] => {
+        return weeks.map((w, i) => ({
+            ...w,
+            weekNumber: i + 1,
+        }));
+    };
+    const deleteWeek = (weekIndex: number) => {
+        let updated = ptSessions.filter((_, i) => i !== weekIndex);
+
+        // keep at least 1 week
+        if (updated.length === 0) {
+            updated = [
+                {
+                    weekNumber: 1,
+                    date: "",
+                    sessions: [
+                        {
+                            note: "",
+                            sessionNumber: 0
+                        }
+                    ]
+                }
+            ];
+        }
+
+        setPtSessions(normalizeWeeks(updated));
+    };
+
+    const deleteSession = (weekIndex: number, sessionIndex: number) => {
+        const updated = [...ptSessions];
+
+        updated[weekIndex].sessions = updated[weekIndex].sessions.filter(
+            (_, i) => i !== sessionIndex
+        );
+
+        // keep at least 1 session
+        if (updated[weekIndex].sessions.length === 0) {
+            updated[weekIndex].sessions.push({
+                note: "",
+                sessionNumber: 0
+            });
+        }
+
+        setPtSessions(updated);
+    };
+
     const livingAidOptions: LivingAids = ["Walker", "Crutches", "Stick", "Brace"];
 
     const sittingOptions: SittingPosition = ["Side of the bed", "On Chair"];
@@ -136,6 +229,7 @@ export default function PatientForm() {
     const isEdit = !!id;
 
     const { patients, savePatient, currentPatient } = usePatientStore();
+    const [showPTSessions, setShowPTSessions] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -156,6 +250,9 @@ export default function PatientForm() {
                 riskFactors: currentPatient.riskFactors || [],
             });
         }
+        if (existingPatient?.ptSchedule) {
+            setPtSessions(existingPatient.ptSchedule);
+        }
     }, [id, patients, currentPatient]);
 
     const updateTreatment = (
@@ -173,6 +270,7 @@ export default function PatientForm() {
 
         const finalPatient = {
             ...patient,
+            ptSessions,
             id: isEdit ? patient.id : Date.now().toString(),
             admissionTypeOther: patient.admissionType.includes("Other") ? admissionOther : undefined,
             riskFactorsOther: patient.riskFactors.includes("Other") ? riskOther : undefined,
@@ -188,10 +286,11 @@ export default function PatientForm() {
             <h2 className="text-xl font-semibold mb-4">Patient Information</h2>
 
             {/* Name & Age */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex md:flex-row flex-col gap-x-10 gap-y-5">
                 <div>
-                    <label className="block font-medium mb-1">Full Name</label>
+                    <label className="block font-medium mb-1">Full Name*</label>
                     <input
+                        required
                         type="text"
                         placeholder="Full Name"
                         className="border p-2 rounded w-full"
@@ -200,11 +299,20 @@ export default function PatientForm() {
                     />
                 </div>
                 <div>
+                    <label className="block font-medium mb-1">Date of Birth</label>
+                    <input
+                        type="date"
+                        className="border p-2 rounded w-full"
+                        value={patient.dateOfBirth}
+                        onChange={e => setPatient({ ...patient, dateOfBirth: e.target.value })}
+                    />
+                </div>
+                <div>
                     <label className="block font-medium mb-1">Age</label>
                     <input
                         type="number"
                         placeholder="Age"
-                        className="border p-2 rounded"
+                        className="border p-2 rounded md:w-1/2 w-1/4"
                         value={patient.age}
                         onChange={e => setPatient({ ...patient, age: Number(e.target.value) })}
                     />
@@ -352,6 +460,123 @@ export default function PatientForm() {
                     value={patient.precautions}
                     onChange={e => setPatient({ ...patient, precautions: e.target.value })}
                 />
+                <div>
+                    <label className="block font-medium mb-1">History</label>
+                    <textarea
+                        placeholder="History"
+                        className="border p-2 rounded w-full mb-2"
+                        value={patient.history}
+                        onChange={e => setPatient({ ...patient, history: e.target.value })}
+                    />
+
+                </div>
+            </div>
+
+            {/* pt sessions and assessments will go here */}
+            <div className="py-5 space-y-6">
+                {/* Dropdown Header */}
+                <button
+                    type="button"
+                    onClick={() => setShowPTSessions(prev => !prev)}
+                    className="w-full flex space-x-2 items-center text-xl font-semibold"
+                >
+                    <span>PT Sessions</span>
+                    <ArrowDown
+                        width={20}
+                        fill="black"
+                        className={`transition-transform duration-200 ${showPTSessions ? "rotate-180" : ""
+                            }`}
+                    />
+                </button>
+
+                {/* Dropdown Content */}
+                {showPTSessions && (
+                    <>
+                        {ptSessions.map((week, weekIndex) => (
+                            <div key={weekIndex} className="border rounded p-4 space-y-4">
+
+                                {/* Week Header */}
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                                    <h3 className="font-semibold">Week {week.weekNumber}</h3>
+                                    <div className="flex gap-3 items-center">
+                                        <input
+                                            type="date"
+                                            className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            value={week.date}
+                                            onChange={(e) => updateWeekDate(weekIndex, e.target.value)}
+                                        />
+
+                                        <button
+                                            type="button"
+                                            onClick={() => deleteWeek(weekIndex)}
+                                            disabled={ptSessions.length === 1}
+                                            className={`p-2 rounded transition
+                                ${ptSessions.length === 1
+                                                    ? "opacity-30 cursor-not-allowed"
+                                                    : "hover:bg-red-100"
+                                                }`}
+                                        >
+                                            <Bin fill="#D2042D" width={20} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Sessions */}
+                                <div className="space-y-3">
+                                    {week.sessions.map((session, sessionIndex) => (
+                                        <div key={sessionIndex} className="flex gap-3 items-start">
+
+                                            <div className="flex-1">
+                                                <label className="block font-medium mb-1">
+                                                    Session {sessionIndex + 1}
+                                                </label>
+
+                                                <textarea
+                                                    placeholder={`Session ${sessionIndex + 1}`}
+                                                    className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    value={session.note}
+                                                    onChange={(e) =>
+                                                        updateSession(weekIndex, sessionIndex, e.target.value)
+                                                    }
+                                                />
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => deleteSession(weekIndex, sessionIndex)}
+                                                className={`mt-7 p-2 rounded transition
+                                    ${week.sessions.length === 1
+                                                        ? "opacity-30 cursor-not-allowed"
+                                                        : ""
+                                                    }`}
+                                            >
+                                                <Bin fill="#D2042D" width={20} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Add Session */}
+                                <button
+                                    type="button"
+                                    onClick={() => addSession(weekIndex)}
+                                    className="text-blue-600 text-sm hover:border p-2 rounded-lg"
+                                >
+                                    + Add Session
+                                </button>
+                            </div>
+                        ))}
+
+                        {/* Add Week */}
+                        <button
+                            type="button"
+                            onClick={addWeek}
+                            className="bg-blue-700 hover:opacity-90 px-4 py-2 rounded text-white"
+                        >
+                            + Add Week
+                        </button>
+                    </>
+                )}
             </div>
 
             {/* Musculoskeletal Evaluation */}
@@ -384,7 +609,7 @@ export default function PatientForm() {
                 {/* Upper Limbs */}
                 <div className="space-y-2">
                     <label className="font-medium">Upper Limbs ROM</label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-3 gap-4">
                         <div>
                             <label className="block mb-1">Shoulder</label>
                             <input
@@ -413,13 +638,28 @@ export default function PatientForm() {
                                 }
                             />
                         </div>
+                        <div>
+                            <label className="block mb-1">Wrist</label>
+                            <input
+                                type="text"
+                                className="border p-2 rounded w-full"
+                                value={musculoskeletal.upperLimbsROM?.wrist || ""}
+                                onChange={e =>
+                                    setMusculoskeletal({
+                                        ...musculoskeletal,
+                                        upperLimbsROM: { ...musculoskeletal.upperLimbsROM, wrist: e.target.value },
+                                    })
+                                }
+                            />
+
+                        </div>
                     </div>
                 </div>
 
                 {/* Lower Limbs */}
                 <div className="space-y-2">
                     <label className="font-medium">Lower Limbs ROM</label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-3 gap-4">
                         <div>
                             <label className="block mb-1">Hip</label>
                             <input
@@ -448,13 +688,27 @@ export default function PatientForm() {
                                 }
                             />
                         </div>
+                        <div>
+                            <label className="block mb-1">Ankle</label>
+                            <input
+                                type="text"
+                                className="border p-2 rounded w-full"
+                                value={musculoskeletal.lowerLimbsROM?.ankle || ""}
+                                onChange={e =>
+                                    setMusculoskeletal({
+                                        ...musculoskeletal,
+                                        lowerLimbsROM: { ...musculoskeletal.lowerLimbsROM, ankle: e.target.value },
+                                    })
+                                }
+                            />
+                        </div>
                     </div>
                 </div>
 
                 {/* Spine */}
                 <div className="space-y-2">
                     <label className="font-medium">Spine ROM</label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid md:grid-cols-2 gap-4">
                         <div>
                             <label className="block mb-1">Cervical</label>
                             <input
@@ -501,16 +755,16 @@ export default function PatientForm() {
             <div className="w-full pt-4">
                 <div className="w-full overflow-x-auto">
                     <table className="w-full border text-xs sm:text-sm md:text-base table-auto">
-                        <thead className="">
+                        <thead>
                             <tr>
                                 <th className="border p-2 text-left whitespace-nowrap">
                                     Date
                                 </th>
                                 {[...Array(5)].map((_, idx) => (
-                                    <th key={idx} className="border p-2">
+                                    <th key={idx} className="border p-2 ">
                                         <input
                                             type="date"
-                                            className="w-full p-1 text-center bg-transparent outline-none text-xs sm:text-base" />
+                                            className="text-center bg-transparent outline-none text-xs sm:text-base" />
                                     </th>
                                 ))}
                             </tr>
@@ -716,17 +970,17 @@ export default function PatientForm() {
                     </thead>
 
                     <tbody className="md:table-row-group">
-                        {/* Row 1 */}
                         <tr className="border block md:table-row">
-                            <td className="text-center items-center font-semibold p-2 block md:hidden border-b text-base">Numerical Scale
-
+                            <td className="text-center items-center font-semibold p-2 block md:hidden border-b text-base">
+                                Numerical Scale
                             </td>
                             <td className="border-b md:border p-2 align-top block md:table-cell" rowSpan={5}>
                                 <PainScaleRating
                                     value={painScale.painScaleRate}
                                     onChange={val =>
                                         setPainScale({ ...painScale, painScaleRate: val })
-                                    } />
+                                    }
+                                />
                             </td>
                             <td className="border-b p-2 block md:hidden">
                                 Pain management is satisfactory when the score remains strictly &lt; 4
@@ -734,32 +988,110 @@ export default function PatientForm() {
                             <td className="md:border border-b p-2 text-center items-center font-semibold block md:hidden text-base">
                                 Algo plus scale (for patients not able to communicate)
                             </td>
-                            <td className="md:border p-2 text-left block md:table-cell">
-                                1. Facial expressions: Frowning, grimacing, wincing, clenched teeth, unexpressive.
+                            <td className="md:border p-2 text-left md:table-cell">
+                                <label className="flex gap-x-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={algoPlus.algoPlusScale.includes("Facial expressions")}
+                                        onChange={e =>
+                                            setAlgoPlus({
+                                                ...algoPlus,
+                                                algoPlusScale: e.target.checked
+                                                    ? [...algoPlus.algoPlusScale, "Facial expressions"]
+                                                    : algoPlus.algoPlusScale.filter((v) => v !== "Facial expressions"),
+                                            })
+                                        }
+                                    />
+                                    <span className="leading-tight">
+                                        1. Facial expressions: Frowning, grimacing, wincing, clenched teeth, unexpressive.
+                                    </span>
+                                </label>
                             </td>
                         </tr>
 
                         <tr className="md:border-b block md:table-row">
-                            <td className="border-x p-2 text-left block md:table-cell">
-                                2. Look: Inattentive, blank stare, distant or imploring, teary eyed, closed eyes.
+                            <td className="border-x p-2 text-left md:table-cell">
+                                <label className="flex gap-x-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={algoPlus.algoPlusScale.includes("Look")}
+                                        onChange={e =>
+                                            setAlgoPlus({
+                                                ...algoPlus,
+                                                algoPlusScale: e.target.checked
+                                                    ? [...algoPlus.algoPlusScale, "Look"]
+                                                    : algoPlus.algoPlusScale.filter((v) => v !== "Look"),
+                                            })
+                                        }
+                                    />
+                                    <span className="leading-tight">
+                                        2. Look: Inattentive, blank stare, distant or imploring, teary eyed, closed eyes.
+                                    </span>
+                                </label>
                             </td>
                         </tr>
 
                         <tr className="md:border-b block md:table-row">
-                            <td className="border-x p-2 text-left block md:table-cell">
-                                3. Complaints: “Ow-ouch”, that hurts, groaning, screaming.
+                            <td className="border-x p-2 text-left md:table-cell">
+                                <label className="flex gap-x-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={algoPlus.algoPlusScale.includes("Complaints")}
+                                        onChange={e =>
+                                            setAlgoPlus({
+                                                ...algoPlus,
+                                                algoPlusScale: e.target.checked
+                                                    ? [...algoPlus.algoPlusScale, "Complaints"]
+                                                    : algoPlus.algoPlusScale.filter((v) => v !== "Complaints"),
+                                            })
+                                        }
+                                    />
+                                    <span className="leading-tight">
+                                        3. Complaints: “Ow-ouch”, that hurts, groaning, screaming.
+                                    </span>
+                                </label>
                             </td>
                         </tr>
 
                         <tr className="md:border-b block md:table-row">
-                            <td className="border p-2 text-left block md:table-cell">
-                                4. Body position: Withdrawn, guarded, refuses to move, frozen posture.
+                            <td className="border p-2 text-left md:table-cell">
+                                <label className="flex gap-x-2">                                    <input
+                                    type="checkbox"
+                                    checked={algoPlus.algoPlusScale.includes("Body position")}
+                                    onChange={e =>
+                                        setAlgoPlus({
+                                            ...algoPlus,
+                                            algoPlusScale: e.target.checked
+                                                ? [...algoPlus.algoPlusScale, "Body position"]
+                                                : algoPlus.algoPlusScale.filter((v) => v !== "Body position"),
+                                        })
+                                    }
+                                />
+                                    <span className="leading-tight">
+                                        4. Body position: Withdrawn, guarded, refuses to move, frozen posture.
+                                    </span>
+                                </label>
                             </td>
                         </tr>
-
                         <tr className="md:border block md:table-row">
-                            <td className="border-x p-2 text-left block md:table-cell">
-                                5. Atypical behavior: Agitation, aggressivity, grabbing onto something or someone.
+                            <td className="border-x p-2 text-left md:table-cell">
+                                <label className="flex gap-x-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={algoPlus.algoPlusScale.includes("Atypical behavior")}
+                                        onChange={e =>
+                                            setAlgoPlus({
+                                                ...algoPlus,
+                                                algoPlusScale: e.target.checked
+                                                    ? [...algoPlus.algoPlusScale, "Atypical behavior"]
+                                                    : algoPlus.algoPlusScale.filter((v) => v !== "Atypical behavior"),
+                                            })
+                                        }
+                                    />
+                                    <span className="leading-tight">
+                                        5. Atypical behavior: Agitation, aggressivity, grabbing onto something or someone.
+                                    </span>
+                                </label>
                             </td>
                         </tr>
 
@@ -768,9 +1100,8 @@ export default function PatientForm() {
                             <td className="border p-2 hidden md:table-cell">
                                 Pain management is satisfactory when the score remains strictly &lt; 4
                             </td>
-                            <td className="border p-2 text-left block md:table-cell">
-                                Score each item YES (1) / NO (0).<br />
-                                Pain management is satisfactory when the score remains ≤ 2
+                            <td className="border p-2 text-left md:table-cell">
+                                Pain management is satisfactory when the score remains 2
                             </td>
                         </tr>
                     </tbody>
@@ -797,7 +1128,7 @@ export default function PatientForm() {
                                 <th className="border p-2">Date</th>
 
                                 {motorTesting.motorDates.map((date, i) => (
-                                    <th key={"r" + i} className="border p-2 align-middle">
+                                    <th key={"r" + i} className="border p-2 item-center">
                                         <input
                                             type="date"
                                             className="w-full p-1 text-xs"
@@ -900,58 +1231,93 @@ export default function PatientForm() {
                 <h2 className="text-xl font-semibold text-center">
                     Respiratory Test
                 </h2>
+                <table className="border border-collapse w-fit justify-center mx-auto">
+                    <tbody>
+                        <tr className="border">
+                            <td className="p-4 border w-[20%] font-semibold align-top">
+                                Breathing Type
+                            </td>
+                            <td className="p-4 border">
+                                <div className="flex flex-col">
+                                    <CheckboxGroup
+                                        options={breathOptions}
+                                        values={respiratory.breathType}
+                                        onChange={(val) => setRespiratory({ ...respiratory, breathType: val as RespiratoryTest["breathType"] })}
+                                        title={""}
+                                    />
+                                </div>
+                            </td>
+                        </tr>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        <tr className="border">
+                            <td className="p-4 border w-[20%] font-semibold align-top">
+                                Auscultation
+                            </td>
+                            <td className="p-4 border">
+                                <div className="flex flex-col">
+                                    <CheckboxGroup
+                                        options={auscultationOptions}
+                                        values={respiratory.auscultation}
+                                        onChange={(val) => setRespiratory({ ...respiratory, auscultation: val as RespiratoryTest["auscultation"] })}
+                                        title={""}
+                                    />
+                                </div>
+                            </td>
+                        </tr>
 
-                    <CheckboxGroup
-                        title="Breathing Type"
-                        options={breathOptions}
-                        values={respiratory.breathType}
-                        onChange={(val) =>
-                            setRespiratory({ ...respiratory, breathType: val as RespiratoryTest["breathType"] })
-                        }
-                    />
+                        <tr className="border">
+                            <td className="p-4 border w-[20%] font-semibold align-top">
+                                Cough
+                            </td>
+                            <td className="p-4 border">
+                                <div className="flex flex-col">
+                                    <CheckboxGroup
+                                        options={coughOptions}
+                                        values={respiratory.cough}
+                                        onChange={(val) => setRespiratory({ ...respiratory, cough: val as RespiratoryTest["cough"] })}
+                                        title={""}
+                                    />
+                                </div>
+                            </td>
+                        </tr>
 
-                    <CheckboxGroup
-                        title="Auscultation"
-                        options={auscultationOptions}
-                        values={respiratory.auscultation}
-                        onChange={(val) =>
-                            setRespiratory({ ...respiratory, auscultation: val as RespiratoryTest["auscultation"] })
-                        }
-                    />
+                        <tr className="border">
+                            <td className="p-4 border w-[20%] font-semibold align-top">
+                                Secretion
+                            </td>
+                            <td className="p-4 border">
+                                <div className="flex flex-col">
+                                    <CheckboxGroup
+                                        options={secretionOptions}
+                                        values={respiratory.secretion}
+                                        onChange={(val) => setRespiratory({ ...respiratory, secretion: val as RespiratoryTest["secretion"] })}
+                                        title={""}
+                                    />
+                                </div>
+                            </td>
+                        </tr>
 
-                    <CheckboxGroup
-                        title="Cough"
-                        options={coughOptions}
-                        values={respiratory.cough}
-                        onChange={(val) =>
-                            setRespiratory({ ...respiratory, cough: val as RespiratoryTest["cough"] })
-                        }
-                    />
-
-                    <CheckboxGroup
-                        title="Secretion"
-                        options={secretionOptions}
-                        values={respiratory.secretion}
-                        onChange={(val) =>
-                            setRespiratory({ ...respiratory, secretion: val as RespiratoryTest["secretion"] })
-                        }
-                    />
-
-                    <CheckboxGroup
-                        title="Secretion Color"
-                        options={colorOptions}
-                        values={respiratory.secretionColor}
-                        onChange={(val) =>
-                            setRespiratory({ ...respiratory, secretionColor: val as RespiratoryTest["secretionColor"] })
-                        }
-                    />
-                </div>
+                        <tr className="border">
+                            <td className="p-4 border w-[20%] font-semibold align-top">
+                                Secretion Color
+                            </td>
+                            <td className="p-4 border">
+                                <div className="flex flex-col">
+                                    <CheckboxGroup
+                                        options={colorOptions}
+                                        values={respiratory.secretionColor}
+                                        onChange={(val) => setRespiratory({ ...respiratory, secretionColor: val as RespiratoryTest["secretionColor"] })}
+                                        title={""}
+                                    />
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             {/* Treatment Plan */}
-            <div className="space-y-4">
+            <div className="space-y-4 pt-10">
                 <h2 className="text-xl font-semibold text-center">Treatment Plan</h2>
 
                 <div className="w-full overflow-x-auto">

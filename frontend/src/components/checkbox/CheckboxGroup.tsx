@@ -10,18 +10,17 @@ export default function CheckboxGroup({
     onChange: (val: string[]) => void;
 }) {
     return (
-        <div className="space-y-3">
-            <p className="font-medium">{title}</p>
+        <div className="flex flex-col">
+            {title && <p className="font-medium mb-1">{title}</p>}
 
-            <div className="flex flex-wrap gap-x-8 gap-y-3">
+            <div className="flex flex-row">
                 {options.map((opt) => (
                     <label
                         key={opt}
-                        className="flex items-start gap-2 text-sm cursor-pointer"
+                        className="flex items-center gap-1 text-sm cursor-pointer w-35"
                     >
                         <input
                             type="checkbox"
-                            className="mt-1"
                             checked={values.includes(opt)}
                             onChange={() =>
                                 onChange(
@@ -31,7 +30,7 @@ export default function CheckboxGroup({
                                 )
                             }
                         />
-                        <span className="leading-snug">{opt}</span>
+                        <span className="truncate">{opt}</span>
                     </label>
                 ))}
             </div>

@@ -25,7 +25,7 @@ export default function PainScaleRating({ value = 0, onChange }: PainScaleProps)
             </h3>
 
             {/* Scale numbers */}
-            <div className="flex justify-between text-sm px-1 pt-3">
+            <div className="flex justify-between text-sm pt-3">
                 {Array.from({ length: 11 }, (_, i) => (
                     <span key={i}>{i}</span>
                 ))}

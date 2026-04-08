@@ -5,7 +5,7 @@ export default function Header() {
 
     return (
         <>
-            <div className="h-16 flex items-center justify-between px-6  bg-gray-800 text-white">
+            <div className="h-16 flex items-center justify-between px-6  bg-gray-800 text-white sticky top-0 z-50">
                 <a href="/" className="text-xl font-semibold">
                     Reaper’s Log
                 </a>

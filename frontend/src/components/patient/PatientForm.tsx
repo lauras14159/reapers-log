@@ -478,7 +478,7 @@ export default function PatientForm() {
                 <button
                     type="button"
                     onClick={() => setShowPTSessions(prev => !prev)}
-                    className="w-full flex space-x-2 items-center text-xl font-semibold"
+                    className="w-full flex space-x-2 items-center text-lg font-semibold"
                 >
                     <span>PT Sessions</span>
                     <ArrowDown

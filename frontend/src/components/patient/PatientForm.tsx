@@ -12,6 +12,8 @@ import { ArrowDown } from "../../svg/arrowDown";
 export default function PatientForm() {
     // Patient state
     const [patient, setPatient] = useState<Patient>({
+        id: "",
+        patientCode: "",
         fullName: "",
         age: 0,
         dateOfBirth: "",
@@ -287,17 +289,34 @@ export default function PatientForm() {
 
             {/* Name & Age */}
             <div className="flex md:flex-row flex-col gap-x-10 gap-y-5">
-                <div>
-                    <label className="block font-medium mb-1">Full Name*</label>
-                    <input
-                        required
-                        type="text"
-                        placeholder="Full Name"
-                        className="border p-2 rounded w-full"
-                        value={patient.fullName}
-                        onChange={e => setPatient({ ...patient, fullName: e.target.value })}
-                    />
+
+                {/* Patient Code + Full Name (ALWAYS SAME ROW) */}
+                <div className="flex flex-row gap-3 items-end w-full">
+
+                    {/* Code */}
+                    <div className="flex flex-col shrink-0 max-w-[40%]">
+                        <label className="block font-medium mb-1 invisible">Code</label>
+                        <div className="px-3 py-2 border rounded bg-gray-100 truncate">
+                            {currentPatient?.patientCode || "P---"}
+                        </div>
+                    </div>
+
+                    {/* Full Name */}
+                    <div className="flex flex-col flex-1 min-w-0">
+                        <label className="block font-medium mb-1">Full Name*</label>
+                        <input
+                            required
+                            type="text"
+                            placeholder="Full Name"
+                            className="border p-2 rounded w-full"
+                            value={patient.fullName}
+                            onChange={e => setPatient({ ...patient, fullName: e.target.value })}
+                        />
+                    </div>
+
                 </div>
+
+                {/* DOB */}
                 <div>
                     <label className="block font-medium mb-1">Date of Birth</label>
                     <input
@@ -307,6 +326,8 @@ export default function PatientForm() {
                         onChange={e => setPatient({ ...patient, dateOfBirth: e.target.value })}
                     />
                 </div>
+
+                {/* Age */}
                 <div>
                     <label className="block font-medium mb-1">Age</label>
                     <input
@@ -317,6 +338,7 @@ export default function PatientForm() {
                         onChange={e => setPatient({ ...patient, age: Number(e.target.value) })}
                     />
                 </div>
+
             </div>
 
             {/* Sex */}

@@ -8,8 +8,8 @@ type Props = {
     sortBy: "name" | "date";
     onSortChange: (value: "name" | "date") => void;
 
-    filterDate: string;
-    onFilterDateChange: (value: string) => void;
+    // filterDate: string;
+    // onFilterDateChange: (value: string) => void;
 };
 
 export default function PatientFilters({
@@ -17,8 +17,6 @@ export default function PatientFilters({
     onSearchChange,
     sortBy,
     onSortChange,
-    filterDate,
-    onFilterDateChange,
 }: Props) {
     return (
         <div className="flex flex-col sm:flex-row gap-3 p-4 border-b">
@@ -54,14 +52,6 @@ export default function PatientFilters({
                 </span>
             </div>
 
-            {/* Filter by Date */}
-            <input
-                placeholder="MM-DD-YYYY"
-                type="date"
-                value={filterDate}
-                onChange={(e) => onFilterDateChange(e.target.value)}
-                className="px-3 py-2 border rounded"
-            />
         </div>
     );
 }

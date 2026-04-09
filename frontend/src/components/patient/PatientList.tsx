@@ -1,38 +1,13 @@
 import { useMemo, useState } from "react";
-import type { Patient } from "../types/patient";
 import PatientCard from "./PatientCard";
 import PatientFilters from "./PatientFilters";
+import { usePatientStore } from "../hooks/usePatients";
 
 export default function PatientList() {
+    const { patients } = usePatientStore();
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState<"name" | "date">("name");
-    const [filterDate, setFilterDate] = useState("");
-
-    const patients = [
-        {
-            id: "P001",
-            fullName: "John Doe",
-            firstSessionDate: "2024-01-10",
-            admissionType: ["Orthopedic", "Other"] as const,
-            admissionTypeOther: "Custom reason",
-        },
-        {
-            id: "P002",
-            fullName: "Jane Smith",
-            firstSessionDate: "2024-02-15",
-            admissionType: ["Pulmonary"] as const,
-        },
-        {
-            id: "P003",
-            fullName: "Bob Johnson",
-            firstSessionDate: "2024-01-05",
-            admissionType: ["Neurologic", "Other"] as const,
-            admissionTypeOther: "Special case",
-        },
-    ] as Pick<
-        Patient,
-        "id" | "fullName" | "firstSessionDate" | "admissionType" | "admissionTypeOther"
-    >[];
+    const [filterDate] = useState("");//setFilterDate
 
     const filteredPatients = useMemo(() => {
         let result = [...patients];
@@ -75,8 +50,6 @@ export default function PatientList() {
                 onSearchChange={setSearch}
                 sortBy={sortBy}
                 onSortChange={setSortBy}
-                filterDate={filterDate}
-                onFilterDateChange={setFilterDate}
             />
 
             {/* Header */}

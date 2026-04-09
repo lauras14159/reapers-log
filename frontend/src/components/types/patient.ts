@@ -1,5 +1,6 @@
 export type Patient = {
-  id?: string;
+  id: string; // internal (mongo _id later)
+  patientCode: string; // P001 (UI only)
   fullName: string;
   age: number;
   dateOfBirth: string;

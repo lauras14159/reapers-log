@@ -38,6 +38,9 @@ export type Patient = {
 
   // Schedule of PT sessions
   ptSchedule?: PTSchedule;
+
+  //FunctionalField
+  functionalField?: FunctionalField;
 };
 
 export type UpperLimbsROM = {
@@ -105,7 +108,7 @@ export type PainScale = {
 };
 
 export type FunctionalField = {
-  dateFunctionalField: string;
+  dateFunctionalField: string[];
   sitting: NumericScore;
   standing: NumericScore;
   usingLivingAid: NumericScore;
@@ -114,13 +117,6 @@ export type FunctionalField = {
   puttingShoesOrSocks: NumericScore;
   walking10Meters: NumericScore;
   total?: string;
-  period: string;
-  gaitTraining: GaitTraining;
-  livingAids: LivingAids;
-  brace?: Brace;
-  algoPlusScore: AlgoPlusScore;
-  sittingPosition: SittingPosition;
-  painScale: PainScale;
 };
 
 export type MotorSide = string[];

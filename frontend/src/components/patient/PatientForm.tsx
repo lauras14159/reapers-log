@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import type { Patient, MusculoskeletalEvaluation, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale, MotorRow, MotorTesting, RespiratoryTest, TreatmentPlan, PTWeek } from "../types/patient";
+import type { Patient, MusculoskeletalEvaluation, AlgoPlusScore, Brace, GaitTraining, LivingAids, SittingPosition, PainScale, MotorRow, MotorTesting, RespiratoryTest, TreatmentPlan, PTWeek, FunctionalField } from "../types/patient";
 import PainScaleRating from "../Scale/PainScale";
 import CheckboxGroup from "../checkbox/CheckboxGroup";
 import { useParams, useNavigate } from "react-router-dom";
@@ -27,6 +27,7 @@ export default function PatientForm() {
         contraindications: "",
         precautions: "",
         history: "",
+        period: "",
     });
 
     const admissionOptions: Patient["admissionType"] = ["Orthopedic", "Pulmonary", "Neurologic", "Other"];
@@ -34,7 +35,7 @@ export default function PatientForm() {
 
     const [admissionOther, setAdmissionOther] = useState("");
     const [riskOther, setRiskOther] = useState("");
-    const [period, setPeriod] = useState("");
+    // const [period, setPeriod] = useState("");
     const [gaitTraining, setGaitTraining] = useState<GaitTraining>([]);
     const [livingAids, setLivingAids] = useState<LivingAids>([]);
     const [brace, setBrace] = useState<Brace>({ braceField: "" });
@@ -211,6 +212,26 @@ export default function PatientForm() {
         setPtSessions(updated);
     };
 
+    // Function to calculate age from DOB
+    const calculateAge = (dob: string) => {
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const month = today.getMonth();
+        if (month < birthDate.getMonth() || (month === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+            age--; // Subtract 1 year if birthday hasn't occurred yet this year
+        }
+        return age;
+    };
+    const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const dob = e.target.value;
+        setPatient({
+            ...patient,
+            dateOfBirth: dob,
+            age: calculateAge(dob), // Calculate and update age when DOB changes
+        });
+    };
+
     const livingAidOptions: LivingAids = ["Walker", "Crutches", "Stick", "Brace"];
 
     const sittingOptions: SittingPosition = ["Side of the bed", "On Chair"];
@@ -226,37 +247,6 @@ export default function PatientForm() {
         prioritization: ["", "", "", "", ""],
     });
 
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const isEdit = !!id;
-
-    const { patients, savePatient, currentPatient } = usePatientStore();
-    const [showPTSessions, setShowPTSessions] = useState(false);
-
-    useEffect(() => {
-        if (!id) return;
-
-        const existingPatient = patients.find((p) => p.id === id);
-
-        if (existingPatient) {
-            setPatient({
-                ...existingPatient,
-                admissionType: existingPatient.admissionType || [],
-                riskFactors: existingPatient.riskFactors || [],
-                // if you have other array fields, ensure they exist too
-            });
-        } else if (currentPatient) {
-            setPatient({
-                ...currentPatient,
-                admissionType: currentPatient.admissionType || [],
-                riskFactors: currentPatient.riskFactors || [],
-            });
-        }
-        if (existingPatient?.ptSchedule) {
-            setPtSessions(existingPatient.ptSchedule);
-        }
-    }, [id, patients, currentPatient]);
-
     const updateTreatment = (
         field: keyof TreatmentPlan,
         index: number,
@@ -267,17 +257,108 @@ export default function PatientForm() {
         setTreatmentPlan(updated);
     };
 
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const isEdit = !!id;
+
+    const { patients, savePatient, currentPatient } = usePatientStore();
+    const [showPTSessions, setShowPTSessions] = useState(false);
+    const [functionalField, setFunctionalField] = useState<FunctionalField>({
+        dateFunctionalField: ["", "", "", "", ""],
+        sitting: 0,
+        standing: 0,
+        usingLivingAid: 0,
+        goingToRestroom: 0,
+        stairs: 0,
+        puttingShoesOrSocks: 0,
+        walking10Meters: 0,
+        total: ""
+    });
+
+    useEffect(() => {
+        if (!id) return;
+
+        const existingPatient = patients.find((p) => p.id === id);
+
+        if (existingPatient) {
+            setPatient(existingPatient);
+
+            setPtSessions((existingPatient as any).ptSessions || []);
+            setFunctionalField(existingPatient.functionalField || {
+                dateFunctionalField: ["", "", "", "", ""],
+                sitting: 0,
+                standing: 0,
+                usingLivingAid: 0,
+                goingToRestroom: 0,
+                stairs: 0,
+                puttingShoesOrSocks: 0,
+                walking10Meters: 0,
+                total: ""
+            });
+            setGaitTraining(existingPatient.gaitTraining || []);
+            setLivingAids(existingPatient.livingAids || []);
+            setBrace(existingPatient.brace || { braceField: "" });
+            setAlgoPlus(existingPatient.algoPlus || {
+                algoChecked: false,
+                algoPlusScore: 0,
+                algoPlusScale: [],
+            });
+            setSittingPosition(existingPatient.sittingPosition || []);
+            setPainScale(existingPatient.painScale || {
+                numeric: false,
+                score: 0,
+                painScaleRate: 0,
+            });
+            setMusculoskeletal(existingPatient.musculoskeletal || {
+                rangeOfMotion: [],
+                upperLimbsROM: {},
+                lowerLimbsROM: {},
+                spineROM: {},
+            });
+            setRespiratory(existingPatient.respiratory || {
+                breathType: [],
+                auscultation: [],
+                cough: [],
+                secretion: [],
+                secretionColor: [],
+            });
+            setMotorTesting(existingPatient.motorTesting || {
+                motorDates: ["", "", "", "", ""],
+                rows: motorRowsTemplate,
+            });
+            setTreatmentPlan(existingPatient.treatmentPlan || {
+                assessmentFindings: ["", "", "", "", ""],
+                goals: ["", "", "", "", ""],
+                prioritization: ["", "", "", "", ""],
+            });
+        }
+    }, [id, patients, currentPatient]);
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         const finalPatient = {
             ...patient,
+            functionalField,
             ptSessions,
-            id: isEdit ? patient.id : Date.now().toString(),
-            admissionTypeOther: patient.admissionType.includes("Other") ? admissionOther : undefined,
-            riskFactorsOther: patient.riskFactors.includes("Other") ? riskOther : undefined,
-        };
+            gaitTraining,
+            livingAids,
+            brace,
+            algoPlus,
+            sittingPosition,
+            painScale,
+            musculoskeletal,
+            respiratory,
+            motorTesting,
+            treatmentPlan,
+            admissionTypeOther: patient.admissionType.includes("Other")
+                ? admissionOther
+                : undefined,
 
+            riskFactorsOther: patient.riskFactors.includes("Other")
+                ? riskOther
+                : undefined,
+        };
         savePatient(finalPatient);
 
         navigate("/");
@@ -290,14 +371,14 @@ export default function PatientForm() {
             {/* Name & Age */}
             <div className="flex md:flex-row flex-col gap-x-10 gap-y-5">
 
-                {/* Patient Code + Full Name (ALWAYS SAME ROW) */}
+                {/* Patient Code + Full Name */}
                 <div className="flex flex-row gap-3 items-end w-full">
 
                     {/* Code */}
                     <div className="flex flex-col shrink-0 max-w-[40%]">
                         <label className="block font-medium mb-1 invisible">Code</label>
                         <div className="px-3 py-2 border rounded bg-gray-100 truncate">
-                            {currentPatient?.patientCode || "P---"}
+                            {patient?.patientCode || "P---"}
                         </div>
                     </div>
 
@@ -323,7 +404,7 @@ export default function PatientForm() {
                         type="date"
                         className="border p-2 rounded md:w-full w-1/2"
                         value={patient.dateOfBirth}
-                        onChange={e => setPatient({ ...patient, dateOfBirth: e.target.value })}
+                        onChange={handleDobChange}
                     />
                 </div>
 
@@ -335,7 +416,7 @@ export default function PatientForm() {
                         placeholder="Age"
                         className="border p-2 rounded md:w-1/2 w-1/4"
                         value={patient.age}
-                        onChange={e => setPatient({ ...patient, age: Number(e.target.value) })}
+                        readOnly
                     />
                 </div>
 
@@ -786,6 +867,12 @@ export default function PatientForm() {
                                     <th key={idx} className="border p-2 ">
                                         <input
                                             type="date"
+                                            value={functionalField.dateFunctionalField}
+                                            onChange={(e) => {
+                                                const newDates = [...functionalField.dateFunctionalField];
+                                                newDates[idx] = e.target.value;
+                                                setFunctionalField({ ...functionalField, dateFunctionalField: newDates });
+                                            }}
                                             className="text-center bg-transparent outline-none text-xs sm:text-base" />
                                     </th>
                                 ))}
@@ -813,6 +900,13 @@ export default function PatientForm() {
                                                 min={0}
                                                 max={2}
                                                 className="w-full p-1 text-center bg-transparent outline-none text-xs sm:text-sm"
+                                                onChange={(e) => {
+                                                    const newValue = +e.target.value;
+                                                    setFunctionalField((prev) => ({
+                                                        ...prev,
+                                                        [field as keyof FunctionalField]: newValue,
+                                                    }));
+                                                }}
                                             />
                                         </td>
                                     ))}
@@ -826,6 +920,7 @@ export default function PatientForm() {
                                 {[...Array(5)].map((_, idx) => (
                                     <td key={idx} className="border p-2">
                                         <input
+                                            value={functionalField.total}
                                             type="text"
                                             className="w-full p-1 text-center bg-transparent outline-none text-xs sm:text-sm"
                                         />
@@ -860,8 +955,11 @@ export default function PatientForm() {
                     <input
                         type="text"
                         className="border p-2 rounded"
-                        value={period}
-                        onChange={e => setPeriod(e.target.value)}
+                        value={patient.period}
+                        onChange={e => setPatient({
+                            ...patient,
+                            period: e.target.value,
+                        })}
                     />
                 </div>
                 {/* Gait Training */}

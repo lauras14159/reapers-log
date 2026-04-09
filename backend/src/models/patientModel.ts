@@ -47,6 +47,18 @@ export interface IPatient extends Document {
     rows: { name: string; right: string[]; left: string[] }[];
   };
 
+  functionalField?: {
+    dateFunctionalField: string[];
+    sitting: Number;
+    standing: Number;
+    usingLivingAid: Number;
+    goingToRestroom: Number;
+    stairs: Number;
+    puttingShoesOrSocks: Number;
+    walking10Meters: Number;
+    total: String;
+  };
+
   respiratory?: {
     breathType: string[];
     auscultation: string[];
@@ -123,6 +135,18 @@ const patientSchema: Schema = new Schema({
   },
 
   period: String,
+
+  functionalField: {
+    dateFunctionalField: [String],
+    sitting: { type: Number },
+    standing: { type: Number },
+    usingLivingAid: { type: Number },
+    goingToRestroom: { type: Number },
+    stairs: { type: Number },
+    puttingShoesOrSocks: { type: Number },
+    walking10Meters: { type: Number },
+    total: { type: String },
+  },
 
   musculoskeletal: {
     rangeOfMotion: { type: [String], enum: ["Right", "Left"] },

@@ -12,7 +12,7 @@ export default function PatientCard({ patient }: PatientCardProps) {
     const navigate = useNavigate();
     const handleView = () => {
         setCurrentPatient(patient as Patient);
-        navigate(`/patient/${patient.patientCode}`);
+        navigate(`/patient/${patient.id}`);
     };
 
     return (

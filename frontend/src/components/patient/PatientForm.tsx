@@ -32,10 +32,6 @@ export default function PatientForm() {
 
     const admissionOptions: Patient["admissionType"] = ["Orthopedic", "Pulmonary", "Neurologic", "Other"];
     const riskOptions: Patient["riskFactors"] = ["Smoking", "Overweight", "Other"];
-
-    const [admissionOther, setAdmissionOther] = useState("");
-    const [riskOther, setRiskOther] = useState("");
-    // const [period, setPeriod] = useState("");
     const [gaitTraining, setGaitTraining] = useState<GaitTraining>([]);
     const [livingAids, setLivingAids] = useState<LivingAids>([]);
     const [brace, setBrace] = useState<Brace>({ braceField: "" });
@@ -261,78 +257,101 @@ export default function PatientForm() {
     const navigate = useNavigate();
     const isEdit = !!id;
 
-    const { patients, savePatient, currentPatient } = usePatientStore();
+    const { patients, savePatient } = usePatientStore();
     const [showPTSessions, setShowPTSessions] = useState(false);
+
+    const emptyArray = [0, 0, 0, 0, 0];
     const [functionalField, setFunctionalField] = useState<FunctionalField>({
         dateFunctionalField: ["", "", "", "", ""],
-        sitting: 0,
-        standing: 0,
-        usingLivingAid: 0,
-        goingToRestroom: 0,
-        stairs: 0,
-        puttingShoesOrSocks: 0,
-        walking10Meters: 0,
-        total: ""
+        sitting: [...emptyArray],
+        standing: [...emptyArray],
+        usingLivingAid: [...emptyArray],
+        goingToRestroom: [...emptyArray],
+        stairs: [...emptyArray],
+        puttingShoesOrSocks: [...emptyArray],
+        walking10Meters: [...emptyArray],
+        total: ["", "", "", "", ""]
     });
+    const functionalRows = [
+        { key: "sitting", label: "Sitting" },
+        { key: "standing", label: "Standing" },
+        { key: "usingLivingAid", label: "Using living aid" },
+        { key: "goingToRestroom", label: "Going to restroom" },
+        { key: "stairs", label: "Going up/down stairs" },
+        { key: "puttingShoesOrSocks", label: "Putting shoes/socks" },
+        { key: "walking10Meters", label: "Walking 10 meters" }
+    ] as const;
 
     useEffect(() => {
         if (!id) return;
 
         const existingPatient = patients.find((p) => p.id === id);
+        if (!existingPatient) return;
 
-        if (existingPatient) {
-            setPatient(existingPatient);
+        setPatient(existingPatient);
+        setPtSessions((existingPatient as any).ptSessions || []);
 
-            setPtSessions((existingPatient as any).ptSessions || []);
-            setFunctionalField(existingPatient.functionalField || {
-                dateFunctionalField: ["", "", "", "", ""],
-                sitting: 0,
-                standing: 0,
-                usingLivingAid: 0,
-                goingToRestroom: 0,
-                stairs: 0,
-                puttingShoesOrSocks: 0,
-                walking10Meters: 0,
-                total: ""
-            });
-            setGaitTraining(existingPatient.gaitTraining || []);
-            setLivingAids(existingPatient.livingAids || []);
-            setBrace(existingPatient.brace || { braceField: "" });
-            setAlgoPlus(existingPatient.algoPlus || {
-                algoChecked: false,
-                algoPlusScore: 0,
-                algoPlusScale: [],
-            });
-            setSittingPosition(existingPatient.sittingPosition || []);
-            setPainScale(existingPatient.painScale || {
-                numeric: false,
-                score: 0,
-                painScaleRate: 0,
-            });
-            setMusculoskeletal(existingPatient.musculoskeletal || {
-                rangeOfMotion: [],
-                upperLimbsROM: {},
-                lowerLimbsROM: {},
-                spineROM: {},
-            });
-            setRespiratory(existingPatient.respiratory || {
-                breathType: [],
-                auscultation: [],
-                cough: [],
-                secretion: [],
-                secretionColor: [],
-            });
-            setMotorTesting(existingPatient.motorTesting || {
-                motorDates: ["", "", "", "", ""],
-                rows: motorRowsTemplate,
-            });
-            setTreatmentPlan(existingPatient.treatmentPlan || {
-                assessmentFindings: ["", "", "", "", ""],
-                goals: ["", "", "", "", ""],
-                prioritization: ["", "", "", "", ""],
-            });
-        }
-    }, [id, patients, currentPatient]);
+        const ff = existingPatient.functionalField;
+
+        setFunctionalField({
+            dateFunctionalField: ff?.dateFunctionalField || ["", "", "", "", ""],
+
+            sitting: Array.isArray(ff?.sitting) ? ff.sitting : [0, 0, 0, 0, 0],
+            standing: Array.isArray(ff?.standing) ? ff.standing : [0, 0, 0, 0, 0],
+            usingLivingAid: Array.isArray(ff?.usingLivingAid) ? ff.usingLivingAid : [0, 0, 0, 0, 0],
+            goingToRestroom: Array.isArray(ff?.goingToRestroom) ? ff.goingToRestroom : [0, 0, 0, 0, 0],
+            stairs: Array.isArray(ff?.stairs) ? ff.stairs : [0, 0, 0, 0, 0],
+            puttingShoesOrSocks: Array.isArray(ff?.puttingShoesOrSocks) ? ff.puttingShoesOrSocks : [0, 0, 0, 0, 0],
+            walking10Meters: Array.isArray(ff?.walking10Meters) ? ff.walking10Meters : [0, 0, 0, 0, 0],
+
+            total: Array.isArray(ff?.total) ? ff.total : ["", "", "", "", ""],
+        });
+
+        setGaitTraining(existingPatient.gaitTraining || []);
+        setLivingAids(existingPatient.livingAids || []);
+        setBrace(existingPatient.brace || { braceField: "" });
+
+        setAlgoPlus(existingPatient.algoPlus || {
+            algoChecked: false,
+            algoPlusScore: 0,
+            algoPlusScale: [],
+        });
+
+        setSittingPosition(existingPatient.sittingPosition || []);
+
+        setPainScale(existingPatient.painScale || {
+            numeric: false,
+            score: 0,
+            painScaleRate: 0,
+        });
+
+        setMusculoskeletal(existingPatient.musculoskeletal || {
+            rangeOfMotion: [],
+            upperLimbsROM: {},
+            lowerLimbsROM: {},
+            spineROM: {},
+        });
+
+        setRespiratory(existingPatient.respiratory || {
+            breathType: [],
+            auscultation: [],
+            cough: [],
+            secretion: [],
+            secretionColor: [],
+        });
+
+        setMotorTesting(existingPatient.motorTesting || {
+            motorDates: ["", "", "", "", ""],
+            rows: motorRowsTemplate,
+        });
+
+        setTreatmentPlan(existingPatient.treatmentPlan || {
+            assessmentFindings: ["", "", "", "", ""],
+            goals: ["", "", "", "", ""],
+            prioritization: ["", "", "", "", ""],
+        });
+
+    }, [id, patients]);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -352,11 +371,10 @@ export default function PatientForm() {
             motorTesting,
             treatmentPlan,
             admissionTypeOther: patient.admissionType.includes("Other")
-                ? admissionOther
+                ? patient.admissionTypeOther
                 : undefined,
-
             riskFactorsOther: patient.riskFactors.includes("Other")
-                ? riskOther
+                ? patient.riskFactorsOther
                 : undefined,
         };
         savePatient(finalPatient);
@@ -505,8 +523,13 @@ export default function PatientForm() {
                             type="text"
                             placeholder="Specify other admission"
                             className="border p-2 rounded"
-                            value={admissionOther}
-                            onChange={e => setAdmissionOther(e.target.value)}
+                            value={patient.admissionTypeOther || ""}
+                            onChange={e =>
+                                setPatient({
+                                    ...patient,
+                                    admissionTypeOther: e.target.value
+                                })
+                            }
                         />
                     )}
                 </div>
@@ -533,8 +556,13 @@ export default function PatientForm() {
                             type="text"
                             placeholder="Specify other risk factor"
                             className="border p-2 rounded"
-                            value={riskOther}
-                            onChange={e => setRiskOther(e.target.value)}
+                            value={patient.riskFactorsOther || ""}
+                            onChange={e =>
+                                setPatient({
+                                    ...patient,
+                                    riskFactorsOther: e.target.value
+                                })
+                            }
                         />
                     )}
                 </div>
@@ -858,75 +886,90 @@ export default function PatientForm() {
             <div className="w-full pt-4">
                 <div className="w-full overflow-x-auto">
                     <table className="w-full border text-xs sm:text-sm md:text-base table-auto">
+
+                        {/* HEADER */}
                         <thead>
                             <tr>
-                                <th className="border p-2 text-left whitespace-nowrap">
-                                    Date
-                                </th>
+                                <th className="border p-2 text-left">Date</th>
+
                                 {[...Array(5)].map((_, idx) => (
-                                    <th key={idx} className="border p-2 ">
+                                    <th key={idx} className="border p-2">
                                         <input
                                             type="date"
-                                            value={functionalField.dateFunctionalField}
+                                            value={functionalField.dateFunctionalField[idx] || ""}
                                             onChange={(e) => {
-                                                const newDates = [...functionalField.dateFunctionalField];
-                                                newDates[idx] = e.target.value;
-                                                setFunctionalField({ ...functionalField, dateFunctionalField: newDates });
+                                                const updated = [...functionalField.dateFunctionalField];
+                                                updated[idx] = e.target.value;
+
+                                                setFunctionalField(prev => ({
+                                                    ...prev,
+                                                    dateFunctionalField: updated
+                                                }));
                                             }}
-                                            className="text-center bg-transparent outline-none text-xs sm:text-base" />
+                                            className="text-center bg-transparent outline-none"
+                                        />
                                     </th>
                                 ))}
                             </tr>
                         </thead>
 
+                        {/* BODY */}
                         <tbody>
-                            {[
-                                "Sitting",
-                                "Standing",
-                                "Using living aid",
-                                "Going to restroom",
-                                "Going up/down stairs",
-                                "Putting shoes/socks",
-                                "Walking 10 meters"
-                            ].map(field => (
-                                <tr key={field}>
-                                    <td className="border p-2 text-left font-medium whitespace-normal">
-                                        {field}
-                                    </td>
+                            {functionalRows.map(({ key, label }) => (
+                                <tr key={key}>
+                                    <td className="border p-2 font-medium">{label}</td>
+
                                     {[...Array(5)].map((_, idx) => (
                                         <td key={idx} className="border p-2">
                                             <input
                                                 type="number"
                                                 min={0}
                                                 max={2}
-                                                className="w-full p-1 text-center bg-transparent outline-none text-xs sm:text-sm"
+                                                value={functionalField[key]?.[idx] ?? ""}
                                                 onChange={(e) => {
                                                     const newValue = +e.target.value;
-                                                    setFunctionalField((prev) => ({
-                                                        ...prev,
-                                                        [field as keyof FunctionalField]: newValue,
-                                                    }));
+
+                                                    setFunctionalField(prev => {
+                                                        const updated = [...(prev[key] || [0, 0, 0, 0, 0])];
+                                                        updated[idx] = newValue;
+
+                                                        return {
+                                                            ...prev,
+                                                            [key]: updated
+                                                        };
+                                                    });
                                                 }}
+                                                className="w-full text-center bg-transparent outline-none"
                                             />
                                         </td>
                                     ))}
                                 </tr>
                             ))}
 
-                            <tr className=" font-semibold">
-                                <td className="border p-2 text-left whitespace-nowrap">
-                                    Total
-                                </td>
+                            {/* TOTAL */}
+                            <tr>
+                                <td className="border p-2 font-semibold">Total</td>
+
                                 {[...Array(5)].map((_, idx) => (
                                     <td key={idx} className="border p-2">
                                         <input
-                                            value={functionalField.total}
                                             type="text"
-                                            className="w-full p-1 text-center bg-transparent outline-none text-xs sm:text-sm"
+                                            value={functionalField.total?.[idx] ?? ""}
+                                            onChange={(e) => {
+                                                const updated = [...(functionalField.total || ["", "", "", "", ""])];
+                                                updated[idx] = e.target.value;
+
+                                                setFunctionalField(prev => ({
+                                                    ...prev,
+                                                    total: updated
+                                                }));
+                                            }}
+                                            className="w-full text-center bg-transparent outline-none"
                                         />
                                     </td>
                                 ))}
                             </tr>
+
                         </tbody>
                     </table>
                 </div>

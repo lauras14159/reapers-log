@@ -109,16 +109,15 @@ export type PainScale = {
 
 export type FunctionalField = {
   dateFunctionalField: string[];
-  sitting: NumericScore;
-  standing: NumericScore;
-  usingLivingAid: NumericScore;
-  goingToRestroom: NumericScore;
-  stairs: NumericScore;
-  puttingShoesOrSocks: NumericScore;
-  walking10Meters: NumericScore;
-  total?: string;
+  sitting: number[];
+  standing: number[];
+  usingLivingAid: number[];
+  goingToRestroom: number[];
+  stairs: number[];
+  puttingShoesOrSocks: number[];
+  walking10Meters: number[];
+  total?: string[];
 };
-
 export type MotorSide = string[];
 
 export type MotorRow = {

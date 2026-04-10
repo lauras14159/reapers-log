@@ -8,11 +8,12 @@ import { useEffect } from "react";
 import { usePatientStore } from "../hooks/usePatients";
 import { Bin } from "../../svg/bin";
 import { ArrowDown } from "../../svg/arrowDown";
+import generatePatientCode from "../../utils/GeneratePatientCode";
 
 export default function PatientForm() {
     // Patient state
     const [patient, setPatient] = useState<Patient>({
-        id: "",
+        id: undefined,
         patientCode: "",
         fullName: "",
         age: 0,
@@ -122,7 +123,7 @@ export default function PatientForm() {
     });
 
     // PT Sessions state
-    const [ptSessions, setPtSessions] = useState<PTWeek[]>([
+    const [ptSchedule, setPtSchedule] = useState<PTWeek[]>([
         {
             weekNumber: 1,
             date: "",
@@ -134,10 +135,10 @@ export default function PatientForm() {
     ]);
     // Function to add a new week
     const addWeek = () => {
-        setPtSessions([
-            ...ptSessions,
+        setPtSchedule([
+            ...ptSchedule,
             {
-                weekNumber: ptSessions.length + 1,
+                weekNumber: ptSchedule.length + 1,
                 date: "",
                 sessions: [{ note: "", sessionNumber: 1 }],
             },
@@ -145,22 +146,22 @@ export default function PatientForm() {
     };
     // Function to add a session to a specific week
     const addSession = (weekIndex: number) => {
-        const updated = [...ptSessions];
+        const updated = [...ptSchedule];
         updated[weekIndex].sessions.push({
             note: "",
             sessionNumber: 0
         });
-        setPtSessions(updated);
+        setPtSchedule(updated);
     };
     const updateSession = (weekIndex: number, sessionIndex: number, value: string) => {
-        const updated = [...ptSessions];
+        const updated = [...ptSchedule];
         updated[weekIndex].sessions[sessionIndex].note = value;
-        setPtSessions(updated);
+        setPtSchedule(updated);
     };
     const updateWeekDate = (weekIndex: number, value: string) => {
-        const updated = [...ptSessions];
+        const updated = [...ptSchedule];
         updated[weekIndex].date = value;
-        setPtSessions(updated);
+        setPtSchedule(updated);
     };
     const normalizeWeeks = (weeks: PTWeek[]): PTWeek[] => {
         return weeks.map((w, i) => ({
@@ -169,7 +170,7 @@ export default function PatientForm() {
         }));
     };
     const deleteWeek = (weekIndex: number) => {
-        let updated = ptSessions.filter((_, i) => i !== weekIndex);
+        let updated = ptSchedule.filter((_, i) => i !== weekIndex);
 
         // keep at least 1 week
         if (updated.length === 0) {
@@ -187,11 +188,10 @@ export default function PatientForm() {
             ];
         }
 
-        setPtSessions(normalizeWeeks(updated));
+        setPtSchedule(normalizeWeeks(updated));
     };
-
     const deleteSession = (weekIndex: number, sessionIndex: number) => {
-        const updated = [...ptSessions];
+        const updated = [...ptSchedule];
 
         updated[weekIndex].sessions = updated[weekIndex].sessions.filter(
             (_, i) => i !== sessionIndex
@@ -205,7 +205,7 @@ export default function PatientForm() {
             });
         }
 
-        setPtSessions(updated);
+        setPtSchedule(updated);
     };
 
     // Function to calculate age from DOB
@@ -257,7 +257,7 @@ export default function PatientForm() {
     const navigate = useNavigate();
     const isEdit = !!id;
 
-    const { patients, savePatient } = usePatientStore();
+    const { savePatient, patients, fetchPatients } = usePatientStore();
     const [showPTSessions, setShowPTSessions] = useState(false);
 
     const emptyArray = [0, 0, 0, 0, 0];
@@ -282,14 +282,20 @@ export default function PatientForm() {
         { key: "walking10Meters", label: "Walking 10 meters" }
     ] as const;
 
+
     useEffect(() => {
         if (!id) return;
+        if (patients.length === 0) {
+            fetchPatients();
+            return;
+        }
 
         const existingPatient = patients.find((p) => p.id === id);
         if (!existingPatient) return;
 
         setPatient(existingPatient);
-        setPtSessions((existingPatient as any).ptSessions || []);
+
+        setPtSchedule((existingPatient).ptSchedule || []);
 
         const ff = existingPatient.functionalField;
 
@@ -311,73 +317,125 @@ export default function PatientForm() {
         setLivingAids(existingPatient.livingAids || []);
         setBrace(existingPatient.brace || { braceField: "" });
 
-        setAlgoPlus(existingPatient.algoPlus || {
-            algoChecked: false,
-            algoPlusScore: 0,
-            algoPlusScale: [],
-        });
+        setAlgoPlus(
+            existingPatient.algoPlus || {
+                algoChecked: false,
+                algoPlusScore: 0,
+                algoPlusScale: [],
+            }
+        );
 
         setSittingPosition(existingPatient.sittingPosition || []);
 
-        setPainScale(existingPatient.painScale || {
-            numeric: false,
-            score: 0,
-            painScaleRate: 0,
-        });
+        setPainScale(
+            existingPatient.painScale || {
+                numeric: false,
+                score: 0,
+                painScaleRate: 0,
+            }
+        );
 
-        setMusculoskeletal(existingPatient.musculoskeletal || {
-            rangeOfMotion: [],
-            upperLimbsROM: {},
-            lowerLimbsROM: {},
-            spineROM: {},
-        });
+        setMusculoskeletal(
+            existingPatient.musculoskeletal || {
+                rangeOfMotion: [],
+                upperLimbsROM: {},
+                lowerLimbsROM: {},
+                spineROM: {},
+            }
+        );
 
-        setRespiratory(existingPatient.respiratory || {
-            breathType: [],
-            auscultation: [],
-            cough: [],
-            secretion: [],
-            secretionColor: [],
-        });
+        setRespiratory(
+            existingPatient.respiratory || {
+                breathType: [],
+                auscultation: [],
+                cough: [],
+                secretion: [],
+                secretionColor: [],
+            }
+        );
 
-        setMotorTesting(existingPatient.motorTesting || {
-            motorDates: ["", "", "", "", ""],
-            rows: motorRowsTemplate,
-        });
+        setMotorTesting(
+            existingPatient.motorTesting || {
+                motorDates: ["", "", "", "", ""],
+                rows: motorRowsTemplate,
+            }
+        );
 
-        setTreatmentPlan(existingPatient.treatmentPlan || {
-            assessmentFindings: ["", "", "", "", ""],
-            goals: ["", "", "", "", ""],
-            prioritization: ["", "", "", "", ""],
-        });
-
+        setTreatmentPlan(
+            existingPatient.treatmentPlan || {
+                assessmentFindings: ["", "", "", "", ""],
+                goals: ["", "", "", "", ""],
+                prioritization: ["", "", "", "", ""],
+            }
+        );
     }, [id, patients]);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const newCode = generatePatientCode(patients);
+
+        const safe = (v: any, fallback: any) =>
+            v === undefined ? fallback : v;
 
         const finalPatient = {
             ...patient,
-            functionalField,
-            ptSessions,
-            gaitTraining,
-            livingAids,
-            brace,
-            algoPlus,
-            sittingPosition,
-            painScale,
-            musculoskeletal,
-            respiratory,
-            motorTesting,
-            treatmentPlan,
+            patientCode: newCode,
+            functionalField: safe(functionalField, {
+                dateFunctionalField: [],
+                sitting: [],
+                standing: [],
+                usingLivingAid: [],
+                goingToRestroom: [],
+                stairs: [],
+                puttingShoesOrSocks: [],
+                walking10Meters: [],
+                total: [],
+            }),
+
+            ptSchedule: safe(ptSchedule, []),
+            gaitTraining: safe(gaitTraining, []),
+            livingAids: safe(livingAids, []),
+            brace: safe(brace, { braceField: "" }),
+            algoPlus: safe(algoPlus, {
+                algoChecked: false,
+                algoPlusScore: 0,
+                algoPlusScale: [],
+            }),
+            sittingPosition: safe(sittingPosition, []),
+            painScale: safe(painScale, {
+                numeric: false,
+                score: 0,
+                painScaleRate: 0,
+            }),
+            musculoskeletal: safe(musculoskeletal, {
+                rangeOfMotion: [],
+            }),
+            respiratory: safe(respiratory, {
+                breathType: [],
+                auscultation: [],
+                cough: [],
+                secretion: [],
+                secretionColor: [],
+            }),
+            motorTesting: safe(motorTesting, {
+                motorDates: [],
+                rows: [],
+            }),
+            treatmentPlan: safe(treatmentPlan, {
+                assessmentFindings: [],
+                goals: [],
+                prioritization: [],
+            }),
+
             admissionTypeOther: patient.admissionType.includes("Other")
-                ? patient.admissionTypeOther
+                ? patient.admissionTypeOther || ""
                 : undefined,
+
             riskFactorsOther: patient.riskFactors.includes("Other")
-                ? patient.riskFactorsOther
+                ? patient.riskFactorsOther || ""
                 : undefined,
         };
-        savePatient(finalPatient);
+        await savePatient(finalPatient);
 
         navigate("/");
     };
@@ -623,7 +681,7 @@ export default function PatientForm() {
                 {/* Dropdown Content */}
                 {showPTSessions && (
                     <>
-                        {ptSessions.map((week, weekIndex) => (
+                        {ptSchedule.map((week, weekIndex) => (
                             <div key={weekIndex} className="border rounded p-4 space-y-4">
 
                                 {/* Week Header */}
@@ -640,9 +698,9 @@ export default function PatientForm() {
                                         <button
                                             type="button"
                                             onClick={() => deleteWeek(weekIndex)}
-                                            disabled={ptSessions.length === 1}
+                                            disabled={ptSchedule.length === 1}
                                             className={`p-2 rounded transition
-                                ${ptSessions.length === 1
+                                ${ptSchedule.length === 1
                                                     ? "opacity-30 cursor-not-allowed"
                                                     : "hover:bg-red-100"
                                                 }`}

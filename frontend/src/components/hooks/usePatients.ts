@@ -1,70 +1,70 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type { Patient } from "../types/patient";
+import {
+  getPatients,
+  updatePatient,
+  createPatient,
+  deletePatient,
+} from "../../api/patientApi";
 
 type PatientStore = {
   patients: Patient[];
   currentPatient: Patient | null;
+
+  setPatients: (patients: Patient[]) => void;
   setCurrentPatient: (patient: Patient | null) => void;
-  savePatient: (patient: Patient) => void;
-  deletePatient: (id: string) => void;
+
+  fetchPatients: () => Promise<void>;
+  savePatient: (patient: Patient) => Promise<void>;
+  deletePatient: (id: string) => Promise<void>;
 };
 
-function generatePatientCode(patients: { patientCode?: string }[]): string {
-  if (patients.length === 0) return "P001";
+export const usePatientStore = create<PatientStore>((set) => ({
+  patients: [],
+  currentPatient: null,
 
-  const numbers = patients
-    .map((p) => p.patientCode)
-    .filter(Boolean)
-    .map((code) => parseInt(code!.replace("P", "")))
-    .sort((a, b) => b - a);
+  setPatients: (patients) => set({ patients }),
+  setCurrentPatient: (patient) => set({ currentPatient: patient }),
 
-  const next = (numbers[0] || 0) + 1;
+  // LOAD FROM DB
+  fetchPatients: async () => {
+    const data = await getPatients();
+    set({ patients: data });
+  },
 
-  return `P${String(next).padStart(3, "0")}`;
-}
+  // CREATE / UPDATE
+  savePatient: async (patient) => {
+    try {
+      if (patient.id) {
+        const updated = await updatePatient(patient.id, patient);
 
-export const usePatientStore = create<PatientStore>()(
-  persist(
-    (set) => ({
-      patients: [],
-      currentPatient: null,
-
-      setCurrentPatient: (patient) => set({ currentPatient: patient }),
-
-      savePatient: (patient) =>
-        set((state) => {
-          if (patient.id) {
-            //  EDIT (keep same patientCode)
-            return {
-              patients: state.patients.map((p) =>
-                p.id === patient.id ? patient : p,
-              ),
-              currentPatient: patient,
-            };
-          } else {
-            //  CREATE (generate patientCode)
-            const newPatient = {
-              ...patient,
-              id: Date.now().toString(),
-              patientCode: generatePatientCode(state.patients),
-            };
-
-            return {
-              patients: [...state.patients, newPatient],
-              currentPatient: newPatient,
-            };
-          }
-        }),
-      deletePatient: (id) =>
         set((state) => ({
-          patients: state.patients.filter((p) => p.id !== id),
-          currentPatient:
-            state.currentPatient?.id === id ? null : state.currentPatient,
-        })),
-    }),
-    {
-      name: "patient-storage", // name of the item in storage
-    },
-  ),
-);
+          patients: state.patients.map((p) =>
+            p.id === patient.id ? updated : p,
+          ),
+          currentPatient: updated,
+        }));
+      } else {
+        const created = await createPatient(patient);
+
+        set((state) => ({
+          patients: [...state.patients, created],
+          currentPatient: created,
+        }));
+      }
+    } catch (err) {
+      console.error("Save failed", err);
+    }
+  },
+
+  // DELETE
+  deletePatient: async (id) => {
+    await deletePatient(id);
+
+    set((state) => ({
+      patients: state.patients.filter((p) => p.id !== id),
+      currentPatient:
+        state.currentPatient?.id === id ? null : state.currentPatient,
+    }));
+  },
+}));

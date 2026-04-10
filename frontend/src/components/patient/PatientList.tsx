@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PatientCard from "./PatientCard";
 import PatientFilters from "./PatientFilters";
 import { usePatientStore } from "../hooks/usePatients";
 
 export default function PatientList() {
-    const { patients } = usePatientStore();
+    const { patients, fetchPatients } = usePatientStore();
+
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState<"name" | "date">("name");
     const [filterDate] = useState("");//setFilterDate
@@ -41,6 +42,10 @@ export default function PatientList() {
 
         return result;
     }, [patients, search, sortBy, filterDate]);
+
+    useEffect(() => {
+        fetchPatients();
+    }, []);
 
     return (
         <div className="overflow-hidden">

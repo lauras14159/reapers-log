@@ -1,6 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPatient extends Document {
+  id: string;
+  patientCode: string;
   fullName: string;
   age: number;
   dateOfBirth: string;
@@ -48,15 +50,15 @@ export interface IPatient extends Document {
   };
 
   functionalField?: {
-    dateFunctionalField: string[];
-    sitting: Number;
-    standing: Number;
-    usingLivingAid: Number;
-    goingToRestroom: Number;
-    stairs: Number;
-    puttingShoesOrSocks: Number;
-    walking10Meters: Number;
-    total: String;
+    dateFunctionalField: [string];
+    sitting: [Number];
+    standing: [Number];
+    usingLivingAid: [Number];
+    goingToRestroom: [Number];
+    stairs: [Number];
+    puttingShoesOrSocks: [Number];
+    walking10Meters: [Number];
+    total: [string];
   };
 
   respiratory?: {
@@ -85,42 +87,35 @@ export interface IPatient extends Document {
 
 const patientSchema: Schema = new Schema({
   fullName: { type: String, required: true },
-  age: { type: Number, required: true },
-  dateOfBirth: { type: String, required: true },
-  sex: { type: String, enum: ["Male", "Female"], required: true },
+  age: { type: Number, required: false },
+  dateOfBirth: { type: String, required: false },
+  sex: { type: String, enum: ["Male", "Female"], required: false },
 
-  dateOfAccident: { type: String, required: true },
-  firstSessionDate: { type: String, required: true },
-  time: { type: String, required: true },
+  indications: { type: String, default: "" },
+  contraindications: { type: String, default: "" },
+  precautions: { type: String, default: "" },
+  history: { type: String, default: "" },
 
-  admissionType: {
-    type: [String],
-    enum: ["Orthopedic", "Pulmonary", "Neurologic", "Other"],
-    required: true,
-  },
+  patientCode: { type: String, required: false, unique: true },
+
+  dateOfAccident: { type: String },
+  firstSessionDate: { type: String },
+  time: { type: String },
+
+  admissionType: { type: [String], default: [] },
   admissionTypeOther: String,
 
-  riskFactors: {
-    type: [String],
-    enum: ["Smoking", "Overweight", "Other"],
-    required: true,
-  },
+  riskFactors: { type: [String], default: [] },
   riskFactorsOther: String,
 
-  indications: { type: String, required: true },
-  contraindications: { type: String, required: true },
-  precautions: { type: String, required: true },
-
-  history: { type: String, required: true },
-
-  gaitTraining: [String],
-  livingAids: [String],
+  gaitTraining: { type: [String], default: [] },
+  livingAids: { type: [String], default: [] },
 
   brace: {
     braceField: String,
   },
 
-  sittingPosition: [String],
+  sittingPosition: { type: [String], default: [] },
 
   painScale: {
     numeric: Boolean,
@@ -137,15 +132,15 @@ const patientSchema: Schema = new Schema({
   period: String,
 
   functionalField: {
-    dateFunctionalField: [String],
-    sitting: { type: Number },
-    standing: { type: Number },
-    usingLivingAid: { type: Number },
-    goingToRestroom: { type: Number },
-    stairs: { type: Number },
-    puttingShoesOrSocks: { type: Number },
-    walking10Meters: { type: Number },
-    total: { type: String },
+    dateFunctionalField: { type: [String], default: [] },
+    sitting: { type: [Number], default: [] },
+    standing: { type: [Number], default: [] },
+    usingLivingAid: { type: [Number], default: [] },
+    goingToRestroom: { type: [Number], default: [] },
+    stairs: { type: [Number], default: [] },
+    puttingShoesOrSocks: { type: [Number], default: [] },
+    walking10Meters: { type: [Number], default: [] },
+    total: { type: [String], default: [] },
   },
 
   musculoskeletal: {
@@ -167,28 +162,28 @@ const patientSchema: Schema = new Schema({
   },
 
   motorTesting: {
-    motorDates: [String],
+    motorDates: { type: [String], default: [] },
     rows: [
       {
         name: String,
-        right: [String],
-        left: [String],
+        right: { type: [String], default: [] },
+        left: { type: [String], default: [] },
       },
     ],
   },
 
   respiratory: {
-    breathType: [String],
-    auscultation: [String],
-    cough: [String],
-    secretion: [String],
-    secretionColor: [String],
+    breathType: { type: [String], default: [] },
+    auscultation: { type: [String], default: [] },
+    cough: { type: [String], default: [] },
+    secretion: { type: [String], default: [] },
+    secretionColor: { type: [String], default: [] },
   },
 
   treatmentPlan: {
-    assessmentFindings: [String],
-    goals: [String],
-    prioritization: [String],
+    assessmentFindings: { type: [String], default: [] },
+    goals: { type: [String], default: [] },
+    prioritization: { type: [String], default: [] },
   },
 
   ptSchedule: [

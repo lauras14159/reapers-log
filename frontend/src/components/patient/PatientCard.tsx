@@ -23,8 +23,8 @@ export default function PatientCard({ patient }: PatientCardProps) {
                 <h3 className="font-medium w-36">{patient.fullName}</h3>
                 <p className='w-40'>{patient.firstSessionDate}</p>
                 <p>
-                    {patient.admissionType.join(', ')}
-                    {patient.admissionType.includes("Other") && patient.admissionTypeOther
+                    {(patient.admissionType || []).join(', ')}
+                    {patient.admissionType?.includes("Other") && patient.admissionTypeOther
                         ? `: ${patient.admissionTypeOther}`
                         : ''}
                 </p>

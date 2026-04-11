@@ -119,7 +119,6 @@ export type FunctionalField = {
   walking10Meters: number[];
   total?: string[];
 };
-export type MotorSide = string[];
 
 export type MotorRow = {
   name: string;
@@ -128,7 +127,8 @@ export type MotorRow = {
 };
 
 export type MotorTesting = {
-  motorDates: string[];
+  rightDates: string[];
+  leftDates: string[];
   rows: MotorRow[];
 };
 

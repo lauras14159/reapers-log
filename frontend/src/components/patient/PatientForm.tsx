@@ -119,7 +119,8 @@ export default function PatientForm() {
         "Green",
     ];
     const [motorTesting, setMotorTesting] = useState<MotorTesting>({
-        motorDates: ["", "", "", "", ""],
+        rightDates: ["", "", "", "", ""],
+        leftDates: ["", "", "", "", ""],
         rows: motorRowsTemplate,
     });
 
@@ -354,12 +355,11 @@ export default function PatientForm() {
             }
         );
 
-        setMotorTesting(
-            existingPatient.motorTesting || {
-                motorDates: ["", "", "", "", ""],
-                rows: motorRowsTemplate,
-            }
-        );
+        setMotorTesting({
+            rightDates: existingPatient.motorTesting?.rightDates || ["", "", "", "", ""],
+            leftDates: existingPatient.motorTesting?.leftDates || ["", "", "", "", ""],
+            rows: existingPatient.motorTesting?.rows || motorRowsTemplate,
+        });
 
         setTreatmentPlan(
             existingPatient.treatmentPlan || {
@@ -419,7 +419,8 @@ export default function PatientForm() {
                 secretionColor: [],
             }),
             motorTesting: safe(motorTesting, {
-                motorDates: [],
+                rightDates: [],
+                leftDates: [],
                 rows: [],
             }),
             treatmentPlan: safe(treatmentPlan, {
@@ -1349,22 +1350,25 @@ export default function PatientForm() {
                             <tr>
                                 <th className="border p-2">Date</th>
 
-                                {motorTesting.motorDates.map((date, i) => (
+                                {motorTesting.rightDates.map((date, i) => (
                                     <th key={"r" + i} className="border p-2 item-center">
                                         <input
                                             type="date"
                                             className="w-full p-1 text-xs"
                                             value={date}
                                             onChange={(e) => {
-                                                const newDates = [...motorTesting.motorDates];
+                                                const newDates = [...motorTesting.rightDates];
                                                 newDates[i] = e.target.value;
-                                                setMotorTesting({ ...motorTesting, motorDates: newDates });
+
+                                                setMotorTesting({
+                                                    ...motorTesting,
+                                                    rightDates: newDates,
+                                                });
                                             }}
                                         />
                                     </th>
                                 ))}
-
-                                {motorTesting.motorDates.map((date, i) => (
+                                {motorTesting.leftDates.map((date, i) => (
                                     <th
                                         key={"l" + i}
                                         className={`border p-2 align-middle ${i === 0 ? "border-l-4 border-l-black" : ""
@@ -1375,9 +1379,13 @@ export default function PatientForm() {
                                             className="w-full p-1 text-xs"
                                             value={date}
                                             onChange={(e) => {
-                                                const newDates = [...motorTesting.motorDates];
+                                                const newDates = [...motorTesting.leftDates];
                                                 newDates[i] = e.target.value;
-                                                setMotorTesting({ ...motorTesting, motorDates: newDates });
+
+                                                setMotorTesting({
+                                                    ...motorTesting,
+                                                    leftDates: newDates,
+                                                });
                                             }}
                                         />
                                     </th>

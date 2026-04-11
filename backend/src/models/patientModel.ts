@@ -45,7 +45,8 @@ export interface IPatient extends Document {
   };
 
   motorTesting?: {
-    motorDates: string[];
+    rightDates: string[];
+    leftDates: string[];
     rows: { name: string; right: string[]; left: string[] }[];
   };
 
@@ -163,6 +164,8 @@ const patientSchema: Schema = new Schema({
 
   motorTesting: {
     motorDates: { type: [String], default: [] },
+    rightDates: { type: [String], default: [] },
+    leftDates: { type: [String], default: [] },
     rows: [
       {
         name: String,

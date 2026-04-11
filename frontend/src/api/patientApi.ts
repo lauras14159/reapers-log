@@ -22,6 +22,12 @@ export const createPatient = async (data: any) => {
     body: JSON.stringify(data),
   });
 
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("CREATE ERROR:", text);
+    throw new Error("Failed to create patient");
+  }
+
   const json = await res.json();
 
   return {
@@ -39,6 +45,12 @@ export const updatePatient = async (id: string, data: any) => {
     },
     body: JSON.stringify(data),
   });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("UPDATE ERROR:", text);
+    throw new Error("Failed to update patient");
+  }
 
   const json = await res.json();
 

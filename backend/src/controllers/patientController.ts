@@ -27,3 +27,33 @@ export const createPatient = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const updatePatient = async (req: Request, res: Response) => {
+  try {
+    const updated = await Patient.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+
+    if (!updated) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.json(updated);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deletePatient = async (req: Request, res: Response) => {
+  try {
+    const deleted = await Patient.findByIdAndDelete(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.json({ message: "Patient deleted" });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};

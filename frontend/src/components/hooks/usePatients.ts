@@ -35,16 +35,18 @@ export const usePatientStore = create<PatientStore>((set) => ({
   // CREATE / UPDATE
   savePatient: async (patient) => {
     try {
-      if (patient.id) {
-        const updated = await updatePatient(patient.id, patient);
+      if (patient._id) {
+        // UPDATE
+        const updated = await updatePatient(patient._id, patient);
 
         set((state) => ({
           patients: state.patients.map((p) =>
-            p.id === patient.id ? updated : p,
+            p._id === patient._id ? updated : p,
           ),
           currentPatient: updated,
         }));
       } else {
+        //  CREATE
         const created = await createPatient(patient);
 
         set((state) => ({
@@ -62,9 +64,9 @@ export const usePatientStore = create<PatientStore>((set) => ({
     await deletePatient(id);
 
     set((state) => ({
-      patients: state.patients.filter((p) => p.id !== id),
+      patients: state.patients.filter((p) => p._id !== id),
       currentPatient:
-        state.currentPatient?.id === id ? null : state.currentPatient,
+        state.currentPatient?._id === id ? null : state.currentPatient,
     }));
   },
 }));

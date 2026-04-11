@@ -13,6 +13,7 @@ import generatePatientCode from "../../utils/GeneratePatientCode";
 export default function PatientForm() {
     // Patient state
     const [patient, setPatient] = useState<Patient>({
+        _id: undefined,
         id: undefined,
         patientCode: "",
         fullName: "",
@@ -290,8 +291,7 @@ export default function PatientForm() {
             return;
         }
 
-        const existingPatient = patients.find((p) => p.id === id);
-        if (!existingPatient) return;
+        const existingPatient = patients.find((p) => p._id === id); if (!existingPatient) return;
 
         setPatient(existingPatient);
 
@@ -379,7 +379,8 @@ export default function PatientForm() {
 
         const finalPatient = {
             ...patient,
-            patientCode: newCode,
+            id: patient.id || crypto.randomUUID(),
+            patientCode: isEdit ? patient.patientCode : newCode,
             functionalField: safe(functionalField, {
                 dateFunctionalField: [],
                 sitting: [],

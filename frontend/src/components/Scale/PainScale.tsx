@@ -39,8 +39,7 @@ export default function PainScaleRating({ value = 0, onChange }: PainScaleProps)
                 step={1}
                 value={currentValue}
                 onChange={(e) => handleChange(Number(e.target.value))}
-                className="w-full mt-2 accent-black"
-            />
+                className="w-full mt-2 accent-gray-900 dark:accent-gray-300 dark:hover:accent-white" />
 
             {/* Labels */}
             <div className="flex justify-between text-xs mt-1 ">

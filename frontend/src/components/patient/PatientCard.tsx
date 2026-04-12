@@ -47,7 +47,7 @@ export default function PatientCard({ patient }: PatientCardProps) {
                     }}
                     className="flex items-center justify-center h-10 w-10 cursor-pointer"
                 >
-                    <Bin width={20} fill="#D2042D" />
+                    <Bin width={20} fill="#f70000" />
                 </button>
             </div>
         </div>

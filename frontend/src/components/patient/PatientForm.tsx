@@ -7,8 +7,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { usePatientStore } from "../hooks/usePatients";
 import { Bin } from "../../svg/bin";
-import { ArrowDown } from "../../svg/arrowDown";
 import generatePatientCode from "../../utils/GeneratePatientCode";
+import { AccordionSection } from "../Accordion/AccordionSection";
 
 export default function PatientForm() {
     // Patient state
@@ -260,8 +260,6 @@ export default function PatientForm() {
     const isEdit = !!id;
 
     const { savePatient, patients, fetchPatients } = usePatientStore();
-    const [showPTSessions, setShowPTSessions] = useState(false);
-
     const emptyArray = [0, 0, 0, 0, 0];
     const [functionalField, setFunctionalField] = useState<FunctionalField>({
         dateFunctionalField: ["", "", "", "", ""],
@@ -284,6 +282,7 @@ export default function PatientForm() {
         { key: "walking10Meters", label: "Walking 10 meters" }
     ] as const;
 
+    const [openSection, setOpenSection] = useState<string | null>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -455,7 +454,7 @@ export default function PatientForm() {
                     {/* Code */}
                     <div className="flex flex-col shrink-0 max-w-[40%]">
                         <label className="block font-medium mb-1 invisible">Code</label>
-                        <div className="px-3 py-2 border rounded bg-gray-100 truncate">
+                        <div className="px-3 py-2 border rounded bg-gray-100 truncate text-black">
                             {patient?.patientCode || "P---"}
                         </div>
                     </div>
@@ -664,24 +663,16 @@ export default function PatientForm() {
             </div>
 
             {/* pt sessions and assessments will go here */}
-            <div className="py-5 space-y-6">
-                {/* Dropdown Header */}
-                <button
-                    type="button"
-                    onClick={() => setShowPTSessions(prev => !prev)}
-                    className="w-full flex space-x-2 items-center text-lg font-semibold"
-                >
-                    <span>PT Sessions</span>
-                    <ArrowDown
-                        width={20}
-                        fill="black"
-                        className={`transition-transform duration-200 ${showPTSessions ? "rotate-180" : ""
-                            }`}
-                    />
-                </button>
+            <AccordionSection
+                title="PT Sessions"
+                sectionKey="ptSessions"
+                openSection={openSection}
+                setOpenSection={setOpenSection}
+            >
+                <div className="py-5 space-y-6">
+                    {/* KEEPED EXACT HEADER LOGIC INSIDE */}
 
-                {/* Dropdown Content */}
-                {showPTSessions && (
+                    {/* Dropdown Content */}
                     <>
                         {ptSchedule.map((week, weekIndex) => (
                             <div key={weekIndex} className="border rounded p-4 space-y-4">
@@ -689,25 +680,28 @@ export default function PatientForm() {
                                 {/* Week Header */}
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                                     <h3 className="font-semibold">Week {week.weekNumber}</h3>
+
                                     <div className="flex gap-3 items-center">
                                         <input
                                             type="date"
                                             className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             value={week.date}
-                                            onChange={(e) => updateWeekDate(weekIndex, e.target.value)}
+                                            onChange={(e) =>
+                                                updateWeekDate(weekIndex, e.target.value)
+                                            }
                                         />
 
                                         <button
                                             type="button"
                                             onClick={() => deleteWeek(weekIndex)}
                                             disabled={ptSchedule.length === 1}
-                                            className={`p-2 rounded transition
-                                ${ptSchedule.length === 1
+                                            className={`p-2 rounded transition 
+                                    ${ptSchedule.length === 1
                                                     ? "opacity-30 cursor-not-allowed"
-                                                    : "hover:bg-red-100"
+                                                    : "cursor-pointer"
                                                 }`}
                                         >
-                                            <Bin fill="#D2042D" width={20} />
+                                            <Bin fill="#f70000" width={20} />
                                         </button>
                                     </div>
                                 </div>
@@ -727,21 +721,27 @@ export default function PatientForm() {
                                                     className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                     value={session.note}
                                                     onChange={(e) =>
-                                                        updateSession(weekIndex, sessionIndex, e.target.value)
+                                                        updateSession(
+                                                            weekIndex,
+                                                            sessionIndex,
+                                                            e.target.value
+                                                        )
                                                     }
                                                 />
                                             </div>
 
                                             <button
                                                 type="button"
-                                                onClick={() => deleteSession(weekIndex, sessionIndex)}
+                                                onClick={() =>
+                                                    deleteSession(weekIndex, sessionIndex)
+                                                }
                                                 className={`mt-7 p-2 rounded transition
-                                    ${week.sessions.length === 1
+                                        ${week.sessions.length === 1
                                                         ? "opacity-30 cursor-not-allowed"
-                                                        : ""
+                                                        : "cursor-pointer"
                                                     }`}
                                             >
-                                                <Bin fill="#D2042D" width={20} />
+                                                <Bin fill="#f70000" width={20} />
                                             </button>
                                         </div>
                                     ))}
@@ -767,789 +767,852 @@ export default function PatientForm() {
                             + Add Week
                         </button>
                     </>
-                )}
-            </div>
+                </div>
+            </AccordionSection>
 
             {/* Musculoskeletal Evaluation */}
-            <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-center">Musculoskeletal Evaluation</h2>
-
-                {/* Range of Motion */}
-                <div className="flex items-center gap-6">
-                    <label className="font-medium">Range of Motion</label>
+            <AccordionSection
+                title="Musculoskeletal Evaluation"
+                sectionKey="musculoskeletal"
+                openSection={openSection}
+                setOpenSection={setOpenSection}
+            >
+                <div className="space-y-6">
+                    {/* Range of Motion */}
                     <div className="flex items-center gap-6">
-                        {["Right", "Left"].map(side => (
-                            <label key={side} className="flex items-center gap-2">
+                        <label className="font-medium">Range of Motion</label>
+
+                        <div className="flex items-center gap-6">
+                            {["Right", "Left"].map(side => (
+                                <label key={side} className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={musculoskeletal.rangeOfMotion.includes(
+                                            side as "Right" | "Left"
+                                        )}
+                                        onChange={() =>
+                                            toggleOption(
+                                                side as "Right" | "Left",
+                                                musculoskeletal.rangeOfMotion,
+                                                v =>
+                                                    setMusculoskeletal({
+                                                        ...musculoskeletal,
+                                                        rangeOfMotion: v,
+                                                    })
+                                            )
+                                        }
+                                    />
+                                    {side}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Upper Limbs */}
+                    <div className="space-y-2">
+                        <label className="font-medium">Upper Limbs ROM</label>
+
+                        <div className="grid md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block mb-1">Shoulder</label>
                                 <input
-                                    type="checkbox"
-                                    checked={musculoskeletal.rangeOfMotion.includes(side as "Right" | "Left")}
-                                    onChange={() =>
-                                        toggleOption(
-                                            side as "Right" | "Left",
-                                            musculoskeletal.rangeOfMotion,
-                                            v => setMusculoskeletal({ ...musculoskeletal, rangeOfMotion: v })
-                                        )
+                                    type="text"
+                                    className="border p-2 rounded w-full"
+                                    value={musculoskeletal.upperLimbsROM?.shoulder || ""}
+                                    onChange={e =>
+                                        setMusculoskeletal({
+                                            ...musculoskeletal,
+                                            upperLimbsROM: {
+                                                ...musculoskeletal.upperLimbsROM,
+                                                shoulder: e.target.value,
+                                            },
+                                        })
                                     }
                                 />
-                                {side}
-                            </label>
-                        ))}
-                    </div>
-                </div>
+                            </div>
 
-                {/* Upper Limbs */}
-                <div className="space-y-2">
-                    <label className="font-medium">Upper Limbs ROM</label>
-                    <div className="grid md:grid-cols-3 gap-4">
-                        <div>
-                            <label className="block mb-1">Shoulder</label>
-                            <input
-                                type="text"
-                                className="border p-2 rounded w-full"
-                                value={musculoskeletal.upperLimbsROM?.shoulder || ""}
-                                onChange={e =>
-                                    setMusculoskeletal({
-                                        ...musculoskeletal,
-                                        upperLimbsROM: { ...musculoskeletal.upperLimbsROM, shoulder: e.target.value },
-                                    })
-                                }
-                            />
-                        </div>
-                        <div>
-                            <label className="block mb-1">Elbow</label>
-                            <input
-                                type="text"
-                                className="border p-2 rounded w-full"
-                                value={musculoskeletal.upperLimbsROM?.elbow || ""}
-                                onChange={e =>
-                                    setMusculoskeletal({
-                                        ...musculoskeletal,
-                                        upperLimbsROM: { ...musculoskeletal.upperLimbsROM, elbow: e.target.value },
-                                    })
-                                }
-                            />
-                        </div>
-                        <div>
-                            <label className="block mb-1">Wrist</label>
-                            <input
-                                type="text"
-                                className="border p-2 rounded w-full"
-                                value={musculoskeletal.upperLimbsROM?.wrist || ""}
-                                onChange={e =>
-                                    setMusculoskeletal({
-                                        ...musculoskeletal,
-                                        upperLimbsROM: { ...musculoskeletal.upperLimbsROM, wrist: e.target.value },
-                                    })
-                                }
-                            />
+                            <div>
+                                <label className="block mb-1">Elbow</label>
+                                <input
+                                    type="text"
+                                    className="border p-2 rounded w-full"
+                                    value={musculoskeletal.upperLimbsROM?.elbow || ""}
+                                    onChange={e =>
+                                        setMusculoskeletal({
+                                            ...musculoskeletal,
+                                            upperLimbsROM: {
+                                                ...musculoskeletal.upperLimbsROM,
+                                                elbow: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </div>
 
+                            <div>
+                                <label className="block mb-1">Wrist</label>
+                                <input
+                                    type="text"
+                                    className="border p-2 rounded w-full"
+                                    value={musculoskeletal.upperLimbsROM?.wrist || ""}
+                                    onChange={e =>
+                                        setMusculoskeletal({
+                                            ...musculoskeletal,
+                                            upperLimbsROM: {
+                                                ...musculoskeletal.upperLimbsROM,
+                                                wrist: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Lower Limbs */}
-                <div className="space-y-2">
-                    <label className="font-medium">Lower Limbs ROM</label>
-                    <div className="grid md:grid-cols-3 gap-4">
-                        <div>
-                            <label className="block mb-1">Hip</label>
-                            <input
-                                type="text"
-                                className="border p-2 rounded w-full"
-                                value={musculoskeletal.lowerLimbsROM?.hip || ""}
-                                onChange={e =>
-                                    setMusculoskeletal({
-                                        ...musculoskeletal,
-                                        lowerLimbsROM: { ...musculoskeletal.lowerLimbsROM, hip: e.target.value },
-                                    })
-                                }
-                            />
-                        </div>
-                        <div>
-                            <label className="block mb-1">Knee</label>
-                            <input
-                                type="text"
-                                className="border p-2 rounded w-full"
-                                value={musculoskeletal.lowerLimbsROM?.knee || ""}
-                                onChange={e =>
-                                    setMusculoskeletal({
-                                        ...musculoskeletal,
-                                        lowerLimbsROM: { ...musculoskeletal.lowerLimbsROM, knee: e.target.value },
-                                    })
-                                }
-                            />
-                        </div>
-                        <div>
-                            <label className="block mb-1">Ankle</label>
-                            <input
-                                type="text"
-                                className="border p-2 rounded w-full"
-                                value={musculoskeletal.lowerLimbsROM?.ankle || ""}
-                                onChange={e =>
-                                    setMusculoskeletal({
-                                        ...musculoskeletal,
-                                        lowerLimbsROM: { ...musculoskeletal.lowerLimbsROM, ankle: e.target.value },
-                                    })
-                                }
-                            />
+                    {/* Lower Limbs */}
+                    <div className="space-y-2">
+                        <label className="font-medium">Lower Limbs ROM</label>
+
+                        <div className="grid md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block mb-1">Hip</label>
+                                <input
+                                    type="text"
+                                    className="border p-2 rounded w-full"
+                                    value={musculoskeletal.lowerLimbsROM?.hip || ""}
+                                    onChange={e =>
+                                        setMusculoskeletal({
+                                            ...musculoskeletal,
+                                            lowerLimbsROM: {
+                                                ...musculoskeletal.lowerLimbsROM,
+                                                hip: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block mb-1">Knee</label>
+                                <input
+                                    type="text"
+                                    className="border p-2 rounded w-full"
+                                    value={musculoskeletal.lowerLimbsROM?.knee || ""}
+                                    onChange={e =>
+                                        setMusculoskeletal({
+                                            ...musculoskeletal,
+                                            lowerLimbsROM: {
+                                                ...musculoskeletal.lowerLimbsROM,
+                                                knee: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block mb-1">Ankle</label>
+                                <input
+                                    type="text"
+                                    className="border p-2 rounded w-full"
+                                    value={musculoskeletal.lowerLimbsROM?.ankle || ""}
+                                    onChange={e =>
+                                        setMusculoskeletal({
+                                            ...musculoskeletal,
+                                            lowerLimbsROM: {
+                                                ...musculoskeletal.lowerLimbsROM,
+                                                ankle: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Spine */}
-                <div className="space-y-2">
-                    <label className="font-medium">Spine ROM</label>
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block mb-1">Cervical</label>
-                            <input
-                                type="text"
-                                className="border p-2 rounded w-full"
-                                value={musculoskeletal.spineROM?.cervical || ""}
-                                onChange={e =>
-                                    setMusculoskeletal({
-                                        ...musculoskeletal,
-                                        spineROM: { ...musculoskeletal.spineROM, cervical: e.target.value },
-                                    })
-                                }
-                            />
-                        </div>
-                        <div>
-                            <label className="block mb-1">Lumbar</label>
-                            <input
-                                type="text"
-                                className="border p-2 rounded w-full"
-                                value={musculoskeletal.spineROM?.lumbar || ""}
-                                onChange={e =>
-                                    setMusculoskeletal({
-                                        ...musculoskeletal,
-                                        spineROM: { ...musculoskeletal.spineROM, lumbar: e.target.value },
-                                    })
-                                }
-                            />
+                    {/* Spine */}
+                    <div className="space-y-2">
+                        <label className="font-medium">Spine ROM</label>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block mb-1">Cervical</label>
+                                <input
+                                    type="text"
+                                    className="border p-2 rounded w-full"
+                                    value={musculoskeletal.spineROM?.cervical || ""}
+                                    onChange={e =>
+                                        setMusculoskeletal({
+                                            ...musculoskeletal,
+                                            spineROM: {
+                                                ...musculoskeletal.spineROM,
+                                                cervical: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block mb-1">Lumbar</label>
+                                <input
+                                    type="text"
+                                    className="border p-2 rounded w-full"
+                                    value={musculoskeletal.spineROM?.lumbar || ""}
+                                    onChange={e =>
+                                        setMusculoskeletal({
+                                            ...musculoskeletal,
+                                            spineROM: {
+                                                ...musculoskeletal.spineROM,
+                                                lumbar: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </div>
                         </div>
                     </div>
+
                 </div>
-            </div>
+            </AccordionSection>
 
             {/* Functional Assessment */}
-            <h2 className="text-xl font-semibold pt-10 text-center">
-                Functional Assessment
-            </h2>
-            <h3 className="md:text-lg mb-2 space-x-5">
-                <span className="font-semibold">Scoring:</span>
-                <span>0 = Impossible </span>
-                <span>1 = Possible with difficulty </span>
-                <span>2 = Normal</span>
-            </h3>
-            {/* Functional Assessment Table */}
-            <div className="w-full pt-4">
-                <div className="w-full overflow-x-auto">
-                    <table className="w-full border text-xs sm:text-sm md:text-base table-auto">
+            <AccordionSection
+                title="Functional Assessment"
+                sectionKey="functionalAssessment"
+                openSection={openSection}
+                setOpenSection={setOpenSection}
+            >
+                <h3 className="md:text-lg mb-2 space-x-5">
+                    <span className="font-semibold">Scoring:</span>
+                    <span>0 = Impossible </span>
+                    <span>1 = Possible with difficulty </span>
+                    <span>2 = Normal</span>
+                </h3>
+                {/* Functional Assessment Table */}
+                <div className="w-full pt-4">
+                    <div className="w-full overflow-x-auto">
+                        <table className="w-full border text-xs sm:text-sm md:text-base table-auto">
 
-                        {/* HEADER */}
-                        <thead>
-                            <tr>
-                                <th className="border p-2 text-left">Date</th>
+                            {/* HEADER */}
+                            <thead>
+                                <tr>
+                                    <th className="border p-2 text-left">Date</th>
 
-                                {[...Array(5)].map((_, idx) => (
-                                    <th key={idx} className="border p-2">
-                                        <input
-                                            type="date"
-                                            value={functionalField.dateFunctionalField[idx] || ""}
-                                            onChange={(e) => {
-                                                const updated = [...functionalField.dateFunctionalField];
-                                                updated[idx] = e.target.value;
+                                    {[...Array(5)].map((_, idx) => (
+                                        <th key={idx} className="border p-2">
+                                            <input
+                                                type="date"
+                                                value={functionalField.dateFunctionalField[idx] || ""}
+                                                onChange={(e) => {
+                                                    const updated = [...functionalField.dateFunctionalField];
+                                                    updated[idx] = e.target.value;
 
-                                                setFunctionalField(prev => ({
-                                                    ...prev,
-                                                    dateFunctionalField: updated
-                                                }));
-                                            }}
-                                            className="text-center bg-transparent outline-none"
-                                        />
-                                    </th>
+                                                    setFunctionalField(prev => ({
+                                                        ...prev,
+                                                        dateFunctionalField: updated
+                                                    }));
+                                                }}
+                                                className="text-center bg-transparent outline-none"
+                                            />
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+
+                            {/* BODY */}
+                            <tbody>
+                                {functionalRows.map(({ key, label }) => (
+                                    <tr key={key}>
+                                        <td className="border p-2 font-medium">{label}</td>
+
+                                        {[...Array(5)].map((_, idx) => (
+                                            <td key={idx} className="border p-2">
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    max={2}
+                                                    value={functionalField[key]?.[idx] ?? ""}
+                                                    onChange={(e) => {
+                                                        const newValue = +e.target.value;
+
+                                                        setFunctionalField(prev => {
+                                                            const updated = [...(prev[key] || [0, 0, 0, 0, 0])];
+                                                            updated[idx] = newValue;
+
+                                                            return {
+                                                                ...prev,
+                                                                [key]: updated
+                                                            };
+                                                        });
+                                                    }}
+                                                    className="w-full text-center bg-transparent outline-none"
+                                                />
+                                            </td>
+                                        ))}
+                                    </tr>
                                 ))}
-                            </tr>
-                        </thead>
 
-                        {/* BODY */}
-                        <tbody>
-                            {functionalRows.map(({ key, label }) => (
-                                <tr key={key}>
-                                    <td className="border p-2 font-medium">{label}</td>
+                                {/* TOTAL */}
+                                <tr>
+                                    <td className="border p-2 font-semibold">Total</td>
 
                                     {[...Array(5)].map((_, idx) => (
                                         <td key={idx} className="border p-2">
                                             <input
-                                                type="number"
-                                                min={0}
-                                                max={2}
-                                                value={functionalField[key]?.[idx] ?? ""}
+                                                type="text"
+                                                value={functionalField.total?.[idx] ?? ""}
                                                 onChange={(e) => {
-                                                    const newValue = +e.target.value;
+                                                    const updated = [...(functionalField.total || ["", "", "", "", ""])];
+                                                    updated[idx] = e.target.value;
 
-                                                    setFunctionalField(prev => {
-                                                        const updated = [...(prev[key] || [0, 0, 0, 0, 0])];
-                                                        updated[idx] = newValue;
-
-                                                        return {
-                                                            ...prev,
-                                                            [key]: updated
-                                                        };
-                                                    });
+                                                    setFunctionalField(prev => ({
+                                                        ...prev,
+                                                        total: updated
+                                                    }));
                                                 }}
                                                 className="w-full text-center bg-transparent outline-none"
                                             />
                                         </td>
                                     ))}
                                 </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {/* Additional Assessments */}
+                <>
+                    {/* Sitting Position */}
+                    <div className="py-5">
+                        <label className="block font-medium mb-1">Sitting Position</label>
+                        <div className="flex gap-4">
+                            {sittingOptions.map(opt => (
+                                <label key={opt} className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={sittingPosition.includes(opt)}
+                                        onChange={() => toggleOption(opt, sittingPosition, setSittingPosition)}
+                                    />
+                                    {opt}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                    {/* Period Field */}
+                    <div className="mb-4 ">
+                        <label className="block font-medium mb-1">Period</label>
+                        <input
+                            type="text"
+                            className="border p-2 rounded"
+                            value={patient.period}
+                            onChange={e => setPatient({
+                                ...patient,
+                                period: e.target.value,
+                            })}
+                        />
+                    </div>
+                    {/* Gait Training */}
+                    <div className="mb-4">
+                        <label className="block font-medium mb-1">Gait Training</label>
+                        <div className="flex flex-wrap gap-4">
+                            {gaitOptions.map(opt => (
+                                <label key={opt} className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={gaitTraining.includes(opt)}
+                                        onChange={() => toggleOption(opt, gaitTraining, setGaitTraining)}
+                                    />
+                                    {opt}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Living Aids */}
+                    <div className="mb-4">
+                        <label className="block font-medium mb-1">Living Aids</label>
+                        <div className="flex flex-wrap gap-4">
+                            {livingAidOptions.map(opt => (
+                                <label key={opt} className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={livingAids.includes(opt)}
+                                        onChange={() => toggleOption(opt, livingAids, setLivingAids)}
+                                    />
+                                    {opt}
+                                </label>
                             ))}
 
-                            {/* TOTAL */}
-                            <tr>
-                                <td className="border p-2 font-semibold">Total</td>
+                            {livingAids.includes("Brace") && (
+                                <input
+                                    type="text"
+                                    placeholder="Specify brace"
+                                    className="border p-2 rounded"
+                                    value={brace.braceField}
+                                    onChange={e => setBrace({ braceField: e.target.value })}
+                                />
+                            )}
+                        </div>
+                    </div>
 
-                                {[...Array(5)].map((_, idx) => (
-                                    <td key={idx} className="border p-2">
-                                        <input
-                                            type="text"
-                                            value={functionalField.total?.[idx] ?? ""}
-                                            onChange={(e) => {
-                                                const updated = [...(functionalField.total || ["", "", "", "", ""])];
-                                                updated[idx] = e.target.value;
+                    {/* Pain Scale and Algo+ Score */}
+                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-x-10 py-5">
 
-                                                setFunctionalField(prev => ({
-                                                    ...prev,
-                                                    total: updated
-                                                }));
-                                            }}
-                                            className="w-full text-center bg-transparent outline-none"
-                                        />
-                                    </td>
-                                ))}
-                            </tr>
+                        {/* Pain Scale */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium w-full sm:w-auto">Pain Scale</p>
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {/* Additional Assessments */}
-            <>
-                {/* Sitting Position */}
-                <div className="mb-4">
-                    <label className="block font-medium mb-1">Sitting Position</label>
-                    <div className="flex gap-4">
-                        {sittingOptions.map(opt => (
-                            <label key={opt} className="flex items-center gap-2">
+                            <label className="flex items-center gap-2 sm:pl-6">
                                 <input
                                     type="checkbox"
-                                    checked={sittingPosition.includes(opt)}
-                                    onChange={() => toggleOption(opt, sittingPosition, setSittingPosition)}
-                                />
-                                {opt}
-                            </label>
-                        ))}
-                    </div>
-                </div>
-                {/* Period Field */}
-                <div className="mb-4 ">
-                    <label className="block font-medium mb-1">Period</label>
-                    <input
-                        type="text"
-                        className="border p-2 rounded"
-                        value={patient.period}
-                        onChange={e => setPatient({
-                            ...patient,
-                            period: e.target.value,
-                        })}
-                    />
-                </div>
-                {/* Gait Training */}
-                <div className="mb-4">
-                    <label className="block font-medium mb-1">Gait Training</label>
-                    <div className="flex flex-wrap gap-4">
-                        {gaitOptions.map(opt => (
-                            <label key={opt} className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={gaitTraining.includes(opt)}
-                                    onChange={() => toggleOption(opt, gaitTraining, setGaitTraining)}
-                                />
-                                {opt}
-                            </label>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Living Aids */}
-                <div className="mb-4">
-                    <label className="block font-medium mb-1">Living Aids</label>
-                    <div className="flex flex-wrap gap-4">
-                        {livingAidOptions.map(opt => (
-                            <label key={opt} className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={livingAids.includes(opt)}
-                                    onChange={() => toggleOption(opt, livingAids, setLivingAids)}
-                                />
-                                {opt}
-                            </label>
-                        ))}
-
-                        {livingAids.includes("Brace") && (
-                            <input
-                                type="text"
-                                placeholder="Specify brace"
-                                className="border p-2 rounded"
-                                value={brace.braceField}
-                                onChange={e => setBrace({ braceField: e.target.value })}
-                            />
-                        )}
-                    </div>
-                </div>
-
-                {/* Pain Scale and Algo+ Score */}
-                <div className="flex flex-col sm:flex-row gap-4 sm:gap-x-10">
-
-                    {/* Pain Scale */}
-                    <div className="mb-4 flex flex-wrap items-center gap-2">
-                        <p className="font-medium w-full sm:w-auto">Pain Scale</p>
-
-                        <label className="flex items-center gap-2 sm:pl-6">
-                            <input
-                                type="checkbox"
-                                checked={painScale.numeric}
-                                onChange={e =>
-                                    setPainScale({ ...painScale, numeric: e.target.checked })
-                                }
-                            />
-                            Numeric
-                        </label>
-
-                        <input
-                            type="number"
-                            min={0}
-                            max={10}
-                            className="border p-1 rounded w-16 shrink-0"
-                            placeholder="0 - 10"
-                            value={painScale.score ?? ""}
-                            onChange={e =>
-                                setPainScale({
-                                    ...painScale,
-                                    score: Number(e.target.value),
-                                })
-                            }
-                            disabled={!painScale.numeric}
-                        />
-                        <p>/10</p>
-                    </div>
-
-                    {/* Algo+ Score */}
-                    <div className="mb-4 flex flex-row items-center gap-2">
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="checkbox"
-                                checked={algoPlus.algoChecked}
-                                onChange={e =>
-                                    setAlgoPlus({
-                                        ...algoPlus,
-                                        algoChecked: e.target.checked,
-                                    })
-                                }
-                            />
-                            Algo plus Score
-                        </label>
-
-                        <input
-                            type="number"
-                            className="border p-1 rounded w-16 shrink-0"
-                            placeholder="Score"
-                            value={algoPlus.algoPlusScore ?? ""}
-                            onChange={e =>
-                                setAlgoPlus({
-                                    ...algoPlus,
-                                    algoPlusScore: Number(e.target.value),
-                                })
-                            }
-                            disabled={!algoPlus.algoChecked}
-                        />
-                        <p>/5</p>
-                    </div>
-
-                </div>
-            </>
-
-            {/* Pain Scale Table */}
-            <div className="overflow-x-auto">
-                <table className="min-w-40 w-full border-collapse text-left md:text-center md:text-base text-sm">
-                    <thead className="hidden md:table-header-group text-lg">
-                        <tr>
-                            <th className="border p-2">Numerical Scale</th>
-                            <th className="border p-2">
-                                Algo plus scale (for patients not able to communicate)
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody className="md:table-row-group">
-                        <tr className="border block md:table-row">
-                            <td className="text-center items-center font-semibold p-2 block md:hidden border-b text-base">
-                                Numerical Scale
-                            </td>
-                            <td className="border-b md:border p-2 align-top block md:table-cell" rowSpan={5}>
-                                <PainScaleRating
-                                    value={painScale.painScaleRate}
-                                    onChange={val =>
-                                        setPainScale({ ...painScale, painScaleRate: val })
+                                    checked={painScale.numeric}
+                                    onChange={e =>
+                                        setPainScale({ ...painScale, numeric: e.target.checked })
                                     }
                                 />
-                            </td>
-                            <td className="border-b p-2 block md:hidden">
-                                Pain management is satisfactory when the score remains strictly &lt; 4
-                            </td>
-                            <td className="md:border border-b p-2 text-center items-center font-semibold block md:hidden text-base">
-                                Algo plus scale (for patients not able to communicate)
-                            </td>
-                            <td className="md:border p-2 text-left md:table-cell">
-                                <label className="flex gap-x-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={algoPlus.algoPlusScale.includes("Facial expressions")}
-                                        onChange={e =>
-                                            setAlgoPlus({
-                                                ...algoPlus,
-                                                algoPlusScale: e.target.checked
-                                                    ? [...algoPlus.algoPlusScale, "Facial expressions"]
-                                                    : algoPlus.algoPlusScale.filter((v) => v !== "Facial expressions"),
-                                            })
-                                        }
-                                    />
-                                    <span className="leading-tight">
-                                        1. Facial expressions: Frowning, grimacing, wincing, clenched teeth, unexpressive.
-                                    </span>
-                                </label>
-                            </td>
-                        </tr>
+                                Numeric
+                            </label>
 
-                        <tr className="md:border-b block md:table-row">
-                            <td className="border-x p-2 text-left md:table-cell">
-                                <label className="flex gap-x-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={algoPlus.algoPlusScale.includes("Look")}
-                                        onChange={e =>
-                                            setAlgoPlus({
-                                                ...algoPlus,
-                                                algoPlusScale: e.target.checked
-                                                    ? [...algoPlus.algoPlusScale, "Look"]
-                                                    : algoPlus.algoPlusScale.filter((v) => v !== "Look"),
-                                            })
-                                        }
-                                    />
-                                    <span className="leading-tight">
-                                        2. Look: Inattentive, blank stare, distant or imploring, teary eyed, closed eyes.
-                                    </span>
-                                </label>
-                            </td>
-                        </tr>
+                            <input
+                                type="number"
+                                min={0}
+                                max={10}
+                                className="border p-1 rounded w-16 shrink-0"
+                                placeholder="0 - 10"
+                                value={painScale.score ?? ""}
+                                onChange={e =>
+                                    setPainScale({
+                                        ...painScale,
+                                        score: Number(e.target.value),
+                                    })
+                                }
+                                disabled={!painScale.numeric}
+                            />
+                            <p>/10</p>
+                        </div>
 
-                        <tr className="md:border-b block md:table-row">
-                            <td className="border-x p-2 text-left md:table-cell">
-                                <label className="flex gap-x-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={algoPlus.algoPlusScale.includes("Complaints")}
-                                        onChange={e =>
-                                            setAlgoPlus({
-                                                ...algoPlus,
-                                                algoPlusScale: e.target.checked
-                                                    ? [...algoPlus.algoPlusScale, "Complaints"]
-                                                    : algoPlus.algoPlusScale.filter((v) => v !== "Complaints"),
-                                            })
-                                        }
-                                    />
-                                    <span className="leading-tight">
-                                        3. Complaints: “Ow-ouch”, that hurts, groaning, screaming.
-                                    </span>
-                                </label>
-                            </td>
-                        </tr>
-
-                        <tr className="md:border-b block md:table-row">
-                            <td className="border p-2 text-left md:table-cell">
-                                <label className="flex gap-x-2">                                    <input
+                        {/* Algo+ Score */}
+                        <div className=" flex flex-row items-center gap-2">
+                            <label className="flex items-center gap-2">
+                                <input
                                     type="checkbox"
-                                    checked={algoPlus.algoPlusScale.includes("Body position")}
+                                    checked={algoPlus.algoChecked}
                                     onChange={e =>
                                         setAlgoPlus({
                                             ...algoPlus,
-                                            algoPlusScale: e.target.checked
-                                                ? [...algoPlus.algoPlusScale, "Body position"]
-                                                : algoPlus.algoPlusScale.filter((v) => v !== "Body position"),
+                                            algoChecked: e.target.checked,
                                         })
                                     }
                                 />
-                                    <span className="leading-tight">
-                                        4. Body position: Withdrawn, guarded, refuses to move, frozen posture.
-                                    </span>
-                                </label>
-                            </td>
-                        </tr>
-                        <tr className="md:border block md:table-row">
-                            <td className="border-x p-2 text-left md:table-cell">
-                                <label className="flex gap-x-2">
-                                    <input
+                                Algo plus Score
+                            </label>
+
+                            <input
+                                type="number"
+                                className="border p-1 rounded w-16 shrink-0"
+                                placeholder="Score"
+                                value={algoPlus.algoPlusScore ?? ""}
+                                onChange={e =>
+                                    setAlgoPlus({
+                                        ...algoPlus,
+                                        algoPlusScore: Number(e.target.value),
+                                    })
+                                }
+                                disabled={!algoPlus.algoChecked}
+                            />
+                            <p>/5</p>
+                        </div>
+
+                    </div>
+                </>
+                {/* Pain Scale Table */}
+                <div className="overflow-x-auto">
+                    <table className="min-w-40 w-full border-collapse text-left md:text-center md:text-base text-sm">
+                        <thead className="hidden md:table-header-group text-lg">
+                            <tr>
+                                <th className="border p-2">Numerical Scale</th>
+                                <th className="border p-2">
+                                    Algo plus scale (for patients not able to communicate)
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody className="md:table-row-group">
+                            <tr className="border block md:table-row">
+                                <td className="text-center items-center font-semibold p-2 block md:hidden border-b text-base">
+                                    Numerical Scale
+                                </td>
+                                <td className="border-b md:border p-2 align-top block md:table-cell" rowSpan={5}>
+                                    <PainScaleRating
+                                        value={painScale.painScaleRate}
+                                        onChange={val =>
+                                            setPainScale({ ...painScale, painScaleRate: val })
+                                        }
+                                    />
+                                </td>
+                                <td className="border-b p-2 block md:hidden">
+                                    Pain management is satisfactory when the score remains strictly &lt; 4
+                                </td>
+                                <td className="md:border border-b p-2 text-center items-center font-semibold block md:hidden text-base">
+                                    Algo plus scale (for patients not able to communicate)
+                                </td>
+                                <td className="md:border p-2 text-left md:table-cell">
+                                    <label className="flex gap-x-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={algoPlus.algoPlusScale.includes("Facial expressions")}
+                                            onChange={e =>
+                                                setAlgoPlus({
+                                                    ...algoPlus,
+                                                    algoPlusScale: e.target.checked
+                                                        ? [...algoPlus.algoPlusScale, "Facial expressions"]
+                                                        : algoPlus.algoPlusScale.filter((v) => v !== "Facial expressions"),
+                                                })
+                                            }
+                                        />
+                                        <span className="leading-tight">
+                                            1. Facial expressions: Frowning, grimacing, wincing, clenched teeth, unexpressive.
+                                        </span>
+                                    </label>
+                                </td>
+                            </tr>
+
+                            <tr className="md:border-b block md:table-row">
+                                <td className="border-x p-2 text-left md:table-cell">
+                                    <label className="flex gap-x-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={algoPlus.algoPlusScale.includes("Look")}
+                                            onChange={e =>
+                                                setAlgoPlus({
+                                                    ...algoPlus,
+                                                    algoPlusScale: e.target.checked
+                                                        ? [...algoPlus.algoPlusScale, "Look"]
+                                                        : algoPlus.algoPlusScale.filter((v) => v !== "Look"),
+                                                })
+                                            }
+                                        />
+                                        <span className="leading-tight">
+                                            2. Look: Inattentive, blank stare, distant or imploring, teary eyed, closed eyes.
+                                        </span>
+                                    </label>
+                                </td>
+                            </tr>
+
+                            <tr className="md:border-b block md:table-row">
+                                <td className="border-x p-2 text-left md:table-cell">
+                                    <label className="flex gap-x-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={algoPlus.algoPlusScale.includes("Complaints")}
+                                            onChange={e =>
+                                                setAlgoPlus({
+                                                    ...algoPlus,
+                                                    algoPlusScale: e.target.checked
+                                                        ? [...algoPlus.algoPlusScale, "Complaints"]
+                                                        : algoPlus.algoPlusScale.filter((v) => v !== "Complaints"),
+                                                })
+                                            }
+                                        />
+                                        <span className="leading-tight">
+                                            3. Complaints: “Ow-ouch”, that hurts, groaning, screaming.
+                                        </span>
+                                    </label>
+                                </td>
+                            </tr>
+
+                            <tr className="md:border-b block md:table-row">
+                                <td className="border p-2 text-left md:table-cell">
+                                    <label className="flex gap-x-2">                                    <input
                                         type="checkbox"
-                                        checked={algoPlus.algoPlusScale.includes("Atypical behavior")}
+                                        checked={algoPlus.algoPlusScale.includes("Body position")}
                                         onChange={e =>
                                             setAlgoPlus({
                                                 ...algoPlus,
                                                 algoPlusScale: e.target.checked
-                                                    ? [...algoPlus.algoPlusScale, "Atypical behavior"]
-                                                    : algoPlus.algoPlusScale.filter((v) => v !== "Atypical behavior"),
+                                                    ? [...algoPlus.algoPlusScale, "Body position"]
+                                                    : algoPlus.algoPlusScale.filter((v) => v !== "Body position"),
                                             })
                                         }
                                     />
-                                    <span className="leading-tight">
-                                        5. Atypical behavior: Agitation, aggressivity, grabbing onto something or someone.
-                                    </span>
-                                </label>
-                            </td>
-                        </tr>
-
-                        {/* Last row */}
-                        <tr className="block md:table-row">
-                            <td className="border p-2 hidden md:table-cell">
-                                Pain management is satisfactory when the score remains strictly &lt; 4
-                            </td>
-                            <td className="border p-2 text-left md:table-cell">
-                                Pain management is satisfactory when the score remains 2
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Motor Testing */}
-            <div className="pt-10 w-full max-w-350 mx-auto space-y-4">
-                <h2 className="text-xl font-semibold text-center">Motor Testing</h2>
-
-                {/* Scroll only on mobile */}
-                <div className="w-full overflow-x-auto md:overflow-visible">
-                    <table className="min-w-250 md:min-w-0 w-full md:table-fixed border border-collapse text-xs md:text-sm">
-
-                        {/* HEADER */}
-                        <thead>
-                            <tr>
-                                <th className="border p-2 w-28 md:w-44"></th>
-                                <th className="border p-2" colSpan={5}>Right</th>
-                                <th className="border p-2 border-l-4 border-l-black" colSpan={5}>Left</th>
+                                        <span className="leading-tight">
+                                            4. Body position: Withdrawn, guarded, refuses to move, frozen posture.
+                                        </span>
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr className="md:border block md:table-row">
+                                <td className="border-x p-2 text-left md:table-cell">
+                                    <label className="flex gap-x-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={algoPlus.algoPlusScale.includes("Atypical behavior")}
+                                            onChange={e =>
+                                                setAlgoPlus({
+                                                    ...algoPlus,
+                                                    algoPlusScale: e.target.checked
+                                                        ? [...algoPlus.algoPlusScale, "Atypical behavior"]
+                                                        : algoPlus.algoPlusScale.filter((v) => v !== "Atypical behavior"),
+                                                })
+                                            }
+                                        />
+                                        <span className="leading-tight">
+                                            5. Atypical behavior: Agitation, aggressivity, grabbing onto something or someone.
+                                        </span>
+                                    </label>
+                                </td>
                             </tr>
 
-                            <tr>
-                                <th className="border p-2">Date</th>
-
-                                {motorTesting.rightDates.map((date, i) => (
-                                    <th key={"r" + i} className="border p-2 item-center">
-                                        <input
-                                            type="date"
-                                            className="w-full p-1 text-xs"
-                                            value={date}
-                                            onChange={(e) => {
-                                                const newDates = [...motorTesting.rightDates];
-                                                newDates[i] = e.target.value;
-
-                                                setMotorTesting({
-                                                    ...motorTesting,
-                                                    rightDates: newDates,
-                                                });
-                                            }}
-                                        />
-                                    </th>
-                                ))}
-                                {motorTesting.leftDates.map((date, i) => (
-                                    <th
-                                        key={"l" + i}
-                                        className={`border p-2 align-middle ${i === 0 ? "border-l-4 border-l-black" : ""
-                                            }`}
-                                    >
-                                        <input
-                                            type="date"
-                                            className="w-full p-1 text-xs"
-                                            value={date}
-                                            onChange={(e) => {
-                                                const newDates = [...motorTesting.leftDates];
-                                                newDates[i] = e.target.value;
-
-                                                setMotorTesting({
-                                                    ...motorTesting,
-                                                    leftDates: newDates,
-                                                });
-                                            }}
-                                        />
-                                    </th>
-                                ))}
+                            {/* Last row */}
+                            <tr className="block md:table-row">
+                                <td className="border p-2 hidden md:table-cell">
+                                    Pain management is satisfactory when the score remains strictly &lt; 4
+                                </td>
+                                <td className="border p-2 text-left md:table-cell">
+                                    Pain management is satisfactory when the score remains 2
+                                </td>
                             </tr>
-                        </thead>
-
-                        {/* BODY */}
-                        <tbody>
-                            {motorTesting.rows.map((row, rowIndex) => (
-                                <tr
-                                    key={row.name}
-                                    className={
-                                        row.name.includes("Psoas")
-                                            ? "border-t-4 border-t-black"
-                                            : ""
-                                    }
-                                >
-                                    {/* Muscle */}
-                                    <td className="border p-2 text-left font-medium align-middle wrap-break-word">
-                                        {row.name}
-                                    </td>
-
-                                    {/* RIGHT */}
-                                    {row.right.map((val, colIndex) => (
-                                        <td key={"r" + colIndex} className="border p-2 align-middle">
-                                            <div className="flex justify-center">
-                                                <input
-                                                    type="text"
-                                                    className="w-full max-w-15 p-1 text-center"
-                                                    value={val}
-                                                    onChange={(e) => {
-                                                        const newRows = [...motorTesting.rows];
-                                                        newRows[rowIndex].right[colIndex] = e.target.value;
-                                                        setMotorTesting({ ...motorTesting, rows: newRows });
-                                                    }}
-                                                />
-                                            </div>
-                                        </td>
-                                    ))}
-
-                                    {/* LEFT */}
-                                    {row.left.map((val, colIndex) => (
-                                        <td
-                                            key={"l" + colIndex}
-                                            className={`border p-2 align-middle ${colIndex === 0 ? "border-l-4 border-l-black" : ""
-                                                }`}
-                                        >
-                                            <div className="flex justify-center">
-                                                <input
-                                                    type="text"
-                                                    className="w-full max-w-15 p-1 text-center"
-                                                    value={val}
-                                                    onChange={(e) => {
-                                                        const newRows = [...motorTesting.rows];
-                                                        newRows[rowIndex].left[colIndex] = e.target.value;
-                                                        setMotorTesting({ ...motorTesting, rows: newRows });
-                                                    }}
-                                                />
-                                            </div>
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
                         </tbody>
-
                     </table>
                 </div>
-            </div>
+            </AccordionSection>
+
+
+            {/* Motor Testing */}
+            <AccordionSection
+                title="Motor Testing"
+                sectionKey="motorTesting"
+                openSection={openSection}
+                setOpenSection={setOpenSection}
+            >
+                <div className="pt-10 w-full max-w-350 mx-auto space-y-4">
+                    {/* Scroll only on mobile */}
+                    <div className="w-full overflow-x-auto md:overflow-visible">
+                        <table className="min-w-250 md:min-w-0 w-full md:table-fixed border border-collapse text-xs md:text-sm">
+
+                            {/* HEADER */}
+                            <thead>
+                                <tr>
+                                    <th className="border p-2 w-28 md:w-44"></th>
+                                    <th className="border p-2" colSpan={5}>Right</th>
+                                    <th className="border p-2 border-l-4 border-l-black dark:border-l-white" colSpan={5}>Left</th>
+                                </tr>
+
+                                <tr>
+                                    <th className="border p-2">Date</th>
+
+                                    {motorTesting.rightDates.map((date, i) => (
+                                        <th key={"r" + i} className="border p-2 item-center">
+                                            <input
+                                                type="date"
+                                                className="w-full p-1 text-xs"
+                                                value={date}
+                                                onChange={(e) => {
+                                                    const newDates = [...motorTesting.rightDates];
+                                                    newDates[i] = e.target.value;
+
+                                                    setMotorTesting({
+                                                        ...motorTesting,
+                                                        rightDates: newDates,
+                                                    });
+                                                }}
+                                            />
+                                        </th>
+                                    ))}
+                                    {motorTesting.leftDates.map((date, i) => (
+                                        <th
+                                            key={"l" + i}
+                                            className={`border p-2 align-middle ${i === 0 ? "border-l-4 border-l-black dark:border-l-white" : ""
+                                                }`}
+                                        >
+                                            <input
+                                                type="date"
+                                                className="w-full p-1 text-xs"
+                                                value={date}
+                                                onChange={(e) => {
+                                                    const newDates = [...motorTesting.leftDates];
+                                                    newDates[i] = e.target.value;
+
+                                                    setMotorTesting({
+                                                        ...motorTesting,
+                                                        leftDates: newDates,
+                                                    });
+                                                }}
+                                            />
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+
+                            {/* BODY */}
+                            <tbody>
+                                {motorTesting.rows.map((row, rowIndex) => (
+                                    <tr
+                                        key={row.name}
+                                        className={
+                                            row.name.includes("Psoas")
+                                                ? "border-t-4 border-t-black dark:border-t-white"
+                                                : ""
+                                        }
+                                    >
+                                        {/* Muscle */}
+                                        <td className="border p-2 text-left font-medium align-middle wrap-break-word">
+                                            {row.name}
+                                        </td>
+
+                                        {/* RIGHT */}
+                                        {row.right.map((val, colIndex) => (
+                                            <td key={"r" + colIndex} className="border p-2 align-middle">
+                                                <div className="flex justify-center">
+                                                    <input
+                                                        type="text"
+                                                        className="w-full max-w-15 p-1 text-center"
+                                                        value={val}
+                                                        onChange={(e) => {
+                                                            const newRows = [...motorTesting.rows];
+                                                            newRows[rowIndex].right[colIndex] = e.target.value;
+                                                            setMotorTesting({ ...motorTesting, rows: newRows });
+                                                        }}
+                                                    />
+                                                </div>
+                                            </td>
+                                        ))}
+
+                                        {/* LEFT */}
+                                        {row.left.map((val, colIndex) => (
+                                            <td
+                                                key={"l" + colIndex}
+                                                className={`border p-2 align-middle ${colIndex === 0 ? "border-l-4 border-l-black dark:border-l-white" : ""
+                                                    }`}
+                                            >
+                                                <div className="flex justify-center">
+                                                    <input
+                                                        type="text"
+                                                        className="w-full max-w-15 p-1 text-center"
+                                                        value={val}
+                                                        onChange={(e) => {
+                                                            const newRows = [...motorTesting.rows];
+                                                            newRows[rowIndex].left[colIndex] = e.target.value;
+                                                            setMotorTesting({ ...motorTesting, rows: newRows });
+                                                        }}
+                                                    />
+                                                </div>
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </AccordionSection>
+
 
             {/* Respiratory Test */}
-            <div className="pt-10 space-y-6 overflow-x-scroll">
-                <h2 className="text-xl font-semibold text-center">
-                    Respiratory Test
-                </h2>
-                <table className="border border-collapse w-fit justify-center mx-auto">
-                    <tbody>
-                        <tr className="border">
-                            <td className="p-4 border w-[20%] font-semibold align-top">
-                                Breathing Type
-                            </td>
-                            <td className="p-4 border">
-                                <div className="flex flex-col">
-                                    <CheckboxGroup
-                                        options={breathOptions}
-                                        values={respiratory.breathType}
-                                        onChange={(val) => setRespiratory({ ...respiratory, breathType: val as RespiratoryTest["breathType"] })}
-                                        title={""}
-                                    />
-                                </div>
-                            </td>
-                        </tr>
+            <AccordionSection
+                title="Respiratory Test"
+                sectionKey="respiratoryTest"
+                openSection={openSection}
+                setOpenSection={setOpenSection}
+            >
+                <div className="pt-10 space-y-6 overflow-x-scroll md:overflow-x-hidden">
+                    <table className="border border-collapse w-fit justify-center mx-auto">
+                        <tbody>
+                            <tr className="border">
+                                <td className="p-4 border w-[20%] font-semibold align-top">
+                                    Breathing Type
+                                </td>
+                                <td className="p-4 border">
+                                    <div className="flex flex-col">
+                                        <CheckboxGroup
+                                            options={breathOptions}
+                                            values={respiratory.breathType}
+                                            onChange={(val) => setRespiratory({ ...respiratory, breathType: val as RespiratoryTest["breathType"] })}
+                                            title={""}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
 
-                        <tr className="border">
-                            <td className="p-4 border w-[20%] font-semibold align-top">
-                                Auscultation
-                            </td>
-                            <td className="p-4 border">
-                                <div className="flex flex-col">
-                                    <CheckboxGroup
-                                        options={auscultationOptions}
-                                        values={respiratory.auscultation}
-                                        onChange={(val) => setRespiratory({ ...respiratory, auscultation: val as RespiratoryTest["auscultation"] })}
-                                        title={""}
-                                    />
-                                </div>
-                            </td>
-                        </tr>
+                            <tr className="border">
+                                <td className="p-4 border w-[20%] font-semibold align-top">
+                                    Auscultation
+                                </td>
+                                <td className="p-4 border">
+                                    <div className="flex flex-col">
+                                        <CheckboxGroup
+                                            options={auscultationOptions}
+                                            values={respiratory.auscultation}
+                                            onChange={(val) => setRespiratory({ ...respiratory, auscultation: val as RespiratoryTest["auscultation"] })}
+                                            title={""}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
 
-                        <tr className="border">
-                            <td className="p-4 border w-[20%] font-semibold align-top">
-                                Cough
-                            </td>
-                            <td className="p-4 border">
-                                <div className="flex flex-col">
-                                    <CheckboxGroup
-                                        options={coughOptions}
-                                        values={respiratory.cough}
-                                        onChange={(val) => setRespiratory({ ...respiratory, cough: val as RespiratoryTest["cough"] })}
-                                        title={""}
-                                    />
-                                </div>
-                            </td>
-                        </tr>
+                            <tr className="border">
+                                <td className="p-4 border w-[20%] font-semibold align-top">
+                                    Cough
+                                </td>
+                                <td className="p-4 border">
+                                    <div className="flex flex-col">
+                                        <CheckboxGroup
+                                            options={coughOptions}
+                                            values={respiratory.cough}
+                                            onChange={(val) => setRespiratory({ ...respiratory, cough: val as RespiratoryTest["cough"] })}
+                                            title={""}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
 
-                        <tr className="border">
-                            <td className="p-4 border w-[20%] font-semibold align-top">
-                                Secretion
-                            </td>
-                            <td className="p-4 border">
-                                <div className="flex flex-col">
-                                    <CheckboxGroup
-                                        options={secretionOptions}
-                                        values={respiratory.secretion}
-                                        onChange={(val) => setRespiratory({ ...respiratory, secretion: val as RespiratoryTest["secretion"] })}
-                                        title={""}
-                                    />
-                                </div>
-                            </td>
-                        </tr>
+                            <tr className="border">
+                                <td className="p-4 border w-[20%] font-semibold align-top">
+                                    Secretion
+                                </td>
+                                <td className="p-4 border">
+                                    <div className="flex flex-col">
+                                        <CheckboxGroup
+                                            options={secretionOptions}
+                                            values={respiratory.secretion}
+                                            onChange={(val) => setRespiratory({ ...respiratory, secretion: val as RespiratoryTest["secretion"] })}
+                                            title={""}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
 
-                        <tr className="border">
-                            <td className="p-4 border w-[20%] font-semibold align-top">
-                                Secretion Color
-                            </td>
-                            <td className="p-4 border">
-                                <div className="flex flex-col">
-                                    <CheckboxGroup
-                                        options={colorOptions}
-                                        values={respiratory.secretionColor}
-                                        onChange={(val) => setRespiratory({ ...respiratory, secretionColor: val as RespiratoryTest["secretionColor"] })}
-                                        title={""}
-                                    />
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                            <tr className="border">
+                                <td className="p-4 border w-[20%] font-semibold align-top">
+                                    Secretion Color
+                                </td>
+                                <td className="p-4 border">
+                                    <div className="flex flex-col">
+                                        <CheckboxGroup
+                                            options={colorOptions}
+                                            values={respiratory.secretionColor}
+                                            onChange={(val) => setRespiratory({ ...respiratory, secretionColor: val as RespiratoryTest["secretionColor"] })}
+                                            title={""}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </AccordionSection>
+
 
             {/* Treatment Plan */}
-            <div className="space-y-4 pt-10">
-                <h2 className="text-xl font-semibold text-center">Treatment Plan</h2>
-
+            <AccordionSection
+                title="Treatment Plan"
+                sectionKey="treatmentPlan"
+                openSection={openSection}
+                setOpenSection={setOpenSection}
+            >
                 <div className="w-full overflow-x-auto">
                     <table className="w-full table-auto text-sm md:text-base border">
 
@@ -1630,12 +1693,12 @@ export default function PatientForm() {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </AccordionSection>
 
             <div className="md:justify-start justify-center flex">
                 <button
                     type="submit"
-                    className="hover:bg-[#1e2939] text-white py-2 bg-blue-700 rounded mt-4 duration-500 max-w-xs md:max-w-40 w-full"
+                    className="hover:bg-[#1e2939] dark:hover:bg-blue-800 text-white py-2 bg-blue-700 rounded mt-4 duration-500 max-w-xs md:max-w-40 w-full"
                 >
                     {isEdit ? "Save" : "Submit"}
                 </button>

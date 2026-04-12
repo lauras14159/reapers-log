@@ -1,7 +1,16 @@
+import { useEffect } from "react";
+import { useThemeStore } from "./components/hooks/useThemeStore";
 import AppRouter from "./router/AppRouter";
 
 function App() {
-  return <div className="bg-[#FAF9F6] min-h-screen">
+
+  const theme = useThemeStore((state) => state.theme);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  }, [theme]);
+
+  return <div className="bg-[#FAF9F6] dark:bg-gray-800 text-black dark:text-gray-200 min-h-screen">
     <AppRouter />
   </div>;
 }

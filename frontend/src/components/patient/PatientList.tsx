@@ -58,7 +58,7 @@ export default function PatientList() {
             />
 
             {/* Header */}
-            <div className="hidden sm:flex items-center gap-4 p-4 text-sm font-semibold border-b border-gray-800">
+            <div className="hidden sm:flex items-center gap-4 p-4 text-sm font-semibold border-b border-gray-800 dark:border-white">
                 <p className="w-20 shrink-0">ID</p>
                 <p className="w-36">Name</p>
                 <p className="w-40">First Session Date</p>

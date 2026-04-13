@@ -28,7 +28,7 @@ export default function Header() {
 
                         className="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition"
                     >
-                        {theme === "light" ? "🌙 Dark" : "☀️ Light"}
+                        {theme === "light" ? "🌙" : "☀️"}
                     </button>
                 </div>
             </div>

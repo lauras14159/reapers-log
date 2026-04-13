@@ -454,7 +454,7 @@ export default function PatientForm() {
                     {/* Code */}
                     <div className="flex flex-col shrink-0 max-w-[40%]">
                         <label className="block font-medium mb-1 invisible">Code</label>
-                        <div className="px-3 py-2 border rounded bg-gray-100 truncate text-black">
+                        <div className="px-3 py-2 dark:bg-gray-900 bg-gray-300 rounded truncate text-gray-800 dark:text-white">
                             {patient?.patientCode || "P---"}
                         </div>
                     </div>
@@ -1615,9 +1615,7 @@ export default function PatientForm() {
             >
                 <div className="w-full overflow-x-auto">
                     <table className="w-full table-auto text-sm md:text-base border">
-
-                        {/* HEADER (desktop only) */}
-                        <thead className="hidden md:table-header-group">
+                        <thead>
                             <tr>
                                 <th className="border p-2 w-10">#</th>
                                 <th className="border p-2">Assessment Findings</th>
@@ -1626,30 +1624,19 @@ export default function PatientForm() {
                             </tr>
                         </thead>
 
-                        {/* BODY */}
                         <tbody>
                             {treatmentPlan.assessmentFindings.map((_, index) => (
-                                <tr
-                                    key={index}
-                                    className="block md:table-row md:border-0"
-                                >
-                                    {/* MOBILE TITLE */}
-                                    <td className="md:hidden font-semibold p-2 text-center flex justify-center">
-                                        {index + 1}
-                                    </td>
+                                <tr key={index}>
 
-                                    {/* INDEX (desktop only) */}
-                                    <td className="hidden md:table-cell border p-2 text-center">
+                                    {/* INDEX */}
+                                    <td className="border p-2 text-center">
                                         {index + 1}
                                     </td>
 
                                     {/* Assessment */}
-                                    <td className="block md:table-cell border-t md:border p-2 first:border-t-0">
-                                        <p className="md:hidden text-xs font-semibold mb-1">
-                                            Assessment Findings
-                                        </p>
+                                    <td className="border p-2">
                                         <textarea
-                                            className="w-full p-2 resize-none"
+                                            className="w-full p-2"
                                             rows={2}
                                             value={treatmentPlan.assessmentFindings[index]}
                                             onChange={(e) =>
@@ -1659,12 +1646,9 @@ export default function PatientForm() {
                                     </td>
 
                                     {/* Goals */}
-                                    <td className="block md:table-cell border-t md:border p-2 first:border-t-0">
-                                        <p className="md:hidden text-xs font-semibold mb-1">
-                                            Goals
-                                        </p>
+                                    <td className="border p-2">
                                         <textarea
-                                            className="w-full p-2 resize-none"
+                                            className="w-full p-2"
                                             rows={2}
                                             value={treatmentPlan.goals[index]}
                                             onChange={(e) =>
@@ -1674,13 +1658,10 @@ export default function PatientForm() {
                                     </td>
 
                                     {/* Prioritization */}
-                                    <td className="block md:table-cell border-t md:border p-2 first:border-t-0 border-b">
-                                        <p className="md:hidden text-xs font-semibold mb-1">
-                                            Prioritization
-                                        </p>
+                                    <td className="border p-2">
                                         <textarea
                                             rows={2}
-                                            className="w-full p-2 resize-none"
+                                            className="w-full p-2 "
                                             placeholder="1st, 2nd..."
                                             value={treatmentPlan.prioritization[index]}
                                             onChange={(e) =>
@@ -1688,6 +1669,7 @@ export default function PatientForm() {
                                             }
                                         />
                                     </td>
+
                                 </tr>
                             ))}
                         </tbody>

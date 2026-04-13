@@ -44,8 +44,7 @@ export function AccordionSection({
                 <ArrowDown
                     fill="current"
                     width={20}
-                    className={`fill-current text-gray-800 dark:text-white transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-                        }`}
+                    className={`fill-current text-gray-800 dark:text-white transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                 />
             </button>
 

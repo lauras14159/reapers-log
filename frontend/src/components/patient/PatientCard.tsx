@@ -16,7 +16,7 @@ export default function PatientCard({ patient }: PatientCardProps) {
     };
 
     return (
-        <div className="flex flex-row sm:items-center sm:justify-between justify-center py-5 md:py-2 px-4 border-b border-gray-800 text-sm gap-2 sm:gap-4">
+        <div className="flex flex-row sm:items-center sm:justify-between justify-center py-5 md:py-2 px-4 text-sm gap-2 sm:gap-4 border-b border-gray-800 dark:border-white">
             {/* Patient Info */}
             <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 flex-1 ">
                 <p className="w-20 shrink-0">{patient.patientCode}</p>
@@ -34,7 +34,7 @@ export default function PatientCard({ patient }: PatientCardProps) {
             <div className="flex gap-x-3 shrink-0 justify-end items-center">
                 <button
                     onClick={() => handleView()}
-                    className="flex items-center gap-1 px-3 h-10 rounded-md border border-gray-800 font-medium leading-none cursor-pointer hover:bg-gray-800 hover:text-white transition"
+                    className="flex items-center gap-1 px-3 h-10 rounded-md border border-gray-800 font-medium leading-none cursor-pointer hover:bg-gray-800 hover:text-white transition dark:border-white dark:hover:bg-white dark:hover:text-gray-800"
                 >
                     View
                 </button>

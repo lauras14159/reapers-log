@@ -20,7 +20,6 @@ export default function PatientFilters({
 }: Props) {
     return (
         <div className="flex flex-col sm:flex-row gap-3 p-4 border-b">
-
             {/* Search */}
             <input
                 type="text"
@@ -39,16 +38,20 @@ export default function PatientFilters({
                     onChange={(e) =>
                         onSortChange(e.target.value as "name" | "date")
                     }
-                    className="px-3 py-2 pr-10 w-full border rounded appearance-none"
+                    className="px-3 py-2 pr-10 w-full border rounded appearance-none "
                 >
-                    <option value="name">Sort A → Z</option>
-                    <option value="date">Sort by First Session</option>
+                    <option value="name" className="text-gray-800">Sort A → Z</option>
+                    <option value="date" className="text-gray-800">Sort by First Session</option>
                 </select>
 
                 {/* Custom Arrow */}
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
 
-                    <ArrowDown width={18} fill="black" />
+                    <ArrowDown
+                        fill="current"
+                        width={20}
+                        className="fill-current text-gray-800 dark:text-white transition-transform duration-200"
+                    />
                 </span>
             </div>
 

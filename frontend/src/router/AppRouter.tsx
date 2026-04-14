@@ -3,7 +3,7 @@ import Header from "../components/layout/Header";
 import Dashboard from "../pages/dashboard/Dashboard";
 import PatientForm from "../components/patient/PatientForm";
 import Archive from "../pages/archive/Archive";
-import Profile from "../pages/profile/profile";
+import Profile from "../pages/profile/Profile";
 
 
 const AppRouter = () => {

@@ -1,39 +1,33 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useThemeStore } from "../hooks/useThemeStore";
+import Sidebar from "./Sidebar";
 
 export default function Header() {
-    const navigate = useNavigate();
     const theme = useThemeStore((state) => state.theme);
     const toggleTheme = useThemeStore((state) => state.toggleTheme);
 
     return (
-        <>
+        <div className="min-h-screen flex flex-col">
             <div className="h-16 flex items-center justify-between px-6 bg-gray-800 dark:bg-gray-900 text-white sticky top-0 z-50">
-
                 <a href="/" className="text-xl font-semibold">
                     Reaper’s Log
                 </a>
 
-                <div className="flex items-center gap-3">
-                    {/* New Patient */}
-                    <button
-                        onClick={() => navigate("/patient/new")}
-                        className="px-4 py-2 bg-blue-700 rounded-lg hover:opacity-90"
-                    >
-                        <span className="font-bold">+</span> New Patient
-                    </button>
-                    {/* Theme Toggle */}
-                    <button
-                        onClick={toggleTheme}
-
-                        className="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition"
-                    >
-                        {theme === "light" ? "🌙" : "☀️"}
-                    </button>
-                </div>
+                <button
+                    onClick={toggleTheme}
+                    className="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition"
+                >
+                    {theme === "light" ? "🌙" : "☀️"}
+                </button>
             </div>
 
-            <Outlet />
-        </>
+            <div className="flex flex-1">
+                <Sidebar />
+
+                <main className="flex-1 p-4 md:p-6">
+                    <Outlet />
+                </main>
+            </div>
+        </div>
     );
 }

@@ -28,9 +28,11 @@ export const createPatient = async (req: Request, res: Response) => {
 
 export const updatePatient = async (req: Request, res: Response) => {
   try {
-    const updated = await Patient.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const updated = await Patient.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true, runValidators: true },
+    );
 
     if (!updated) {
       return res.status(404).json({ message: "Patient not found" });

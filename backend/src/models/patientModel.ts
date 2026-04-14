@@ -31,8 +31,8 @@ export interface IPatient extends Document {
 
   algoPlus?: {
     algoChecked: boolean;
+    algoPlusScale: string | null;
     algoPlusScore: number;
-    algoPlusScale: string[];
   };
 
   period?: string;
@@ -125,9 +125,21 @@ const patientSchema: Schema = new Schema({
   },
 
   algoPlus: {
-    algoChecked: Boolean,
-    algoPlusScore: Number,
-    algoPlusScale: [String],
+    algoChecked: { type: Boolean, default: false },
+
+    algoPlusScale: {
+      type: String,
+      enum: [
+        "Facial expressions",
+        "Look",
+        "Complaints",
+        "Body position",
+        "Atypical behavior",
+      ],
+      default: null,
+    },
+
+    algoPlusScore: { type: Number, default: 0 },
   },
 
   period: String,

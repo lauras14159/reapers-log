@@ -86,25 +86,24 @@ export type Brace = {
   braceField: string;
 };
 
-export type AlgoplusScale = Array<
+export type SittingPosition = Array<"Side of the bed" | "On Chair">;
+
+export type AlgoPlusScale =
   | "Facial expressions"
   | "Look"
   | "Complaints"
   | "Body position"
   | "Atypical behavior"
->;
+  | null;
 
 export type AlgoPlusScore = {
   algoChecked: boolean;
+  algoPlusScale: AlgoPlusScale;
   algoPlusScore: number;
-  algoPlusScale: AlgoplusScale;
 };
-
-export type SittingPosition = Array<"Side of the bed" | "On Chair">;
 
 export type PainScale = {
   numeric: boolean;
-  score?: number;
   painScaleRate: number;
 };
 

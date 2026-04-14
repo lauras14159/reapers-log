@@ -39,13 +39,12 @@ export default function PatientForm() {
     const [brace, setBrace] = useState<Brace>({ braceField: "" });
     const [algoPlus, setAlgoPlus] = useState<AlgoPlusScore>({
         algoChecked: false,
+        algoPlusScale: null,
         algoPlusScore: 0,
-        algoPlusScale: [],
     });
     const [sittingPosition, setSittingPosition] = useState<SittingPosition>([]);
     const [painScale, setPainScale] = useState<PainScale>({
         numeric: false,
-        score: 0,
         painScaleRate: 0,
     });
     // Musculoskeletal evaluation state
@@ -284,6 +283,14 @@ export default function PatientForm() {
 
     const [openSection, setOpenSection] = useState<string | null>(null);
 
+    const ALGO_OPTIONS = [
+        "Facial expressions",
+        "Look",
+        "Complaints",
+        "Body position",
+        "Atypical behavior",
+    ] as const;
+
     useEffect(() => {
         if (!id) return;
         if (patients.length === 0) {
@@ -317,23 +324,20 @@ export default function PatientForm() {
         setLivingAids(existingPatient.livingAids || []);
         setBrace(existingPatient.brace || { braceField: "" });
 
-        setAlgoPlus(
-            existingPatient.algoPlus || {
-                algoChecked: false,
-                algoPlusScore: 0,
-                algoPlusScale: [],
-            }
-        );
+        setAlgoPlus({
+            algoChecked: existingPatient.algoPlus?.algoChecked ?? false,
+            algoPlusScale: Array.isArray(existingPatient.algoPlus?.algoPlusScale)
+                ? existingPatient.algoPlus.algoPlusScale[0]
+                : existingPatient.algoPlus?.algoPlusScale ?? null,
+            algoPlusScore: existingPatient.algoPlus?.algoPlusScore ?? 0,
+        });
 
         setSittingPosition(existingPatient.sittingPosition || []);
 
-        setPainScale(
-            existingPatient.painScale || {
-                numeric: false,
-                score: 0,
-                painScaleRate: 0,
-            }
-        );
+        setPainScale({
+            numeric: existingPatient.painScale?.numeric || false,
+            painScaleRate: existingPatient.painScale?.painScaleRate || 0,
+        });
 
         setMusculoskeletal(
             existingPatient.musculoskeletal || {
@@ -372,12 +376,17 @@ export default function PatientForm() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const newCode = generatePatientCode(patients);
+        const score =
+            algoPlus.algoPlusScale &&
+                ALGO_OPTIONS.includes(algoPlus.algoPlusScale)
+                ? ALGO_OPTIONS.indexOf(algoPlus.algoPlusScale) + 1
+                : 0;
 
         const safe = (v: any, fallback: any) =>
             v === undefined ? fallback : v;
-
+        const { algoPlus: _, ...restPatient } = patient;
         const finalPatient = {
-            ...patient,
+            ...restPatient,
             id: patient.id || crypto.randomUUID(),
             patientCode: isEdit ? patient.patientCode : newCode,
             functionalField: safe(functionalField, {
@@ -396,17 +405,17 @@ export default function PatientForm() {
             gaitTraining: safe(gaitTraining, []),
             livingAids: safe(livingAids, []),
             brace: safe(brace, { braceField: "" }),
-            algoPlus: safe(algoPlus, {
-                algoChecked: false,
-                algoPlusScore: 0,
-                algoPlusScale: [],
-            }),
             sittingPosition: safe(sittingPosition, []),
-            painScale: safe(painScale, {
-                numeric: false,
-                score: 0,
-                painScaleRate: 0,
-            }),
+            algoPlus: {
+                algoChecked: !!algoPlus.algoPlusScale,
+                algoPlusScale: algoPlus.algoPlusScale,
+                algoPlusScore: score,
+            },
+            painScale: {
+                numeric: painScale.numeric,
+                painScaleRate: painScale.painScaleRate,
+                score: painScale.painScaleRate,
+            },
             musculoskeletal: safe(musculoskeletal, {
                 rangeOfMotion: [],
             }),
@@ -1155,78 +1164,52 @@ export default function PatientForm() {
                             )}
                         </div>
                     </div>
-
-                    {/* Pain Scale and Algo+ Score */}
-                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-x-10 py-5">
-
-                        {/* Pain Scale */}
-                        <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-medium w-full sm:w-auto">Pain Scale</p>
-
-                            <label className="flex items-center gap-2 sm:pl-6">
-                                <input
-                                    type="checkbox"
-                                    checked={painScale.numeric}
-                                    onChange={e =>
-                                        setPainScale({ ...painScale, numeric: e.target.checked })
-                                    }
-                                />
-                                Numeric
-                            </label>
-
-                            <input
-                                type="number"
-                                min={0}
-                                max={10}
-                                className="border p-1 rounded w-16 shrink-0"
-                                placeholder="0 - 10"
-                                value={painScale.score ?? ""}
-                                onChange={e =>
-                                    setPainScale({
-                                        ...painScale,
-                                        score: Number(e.target.value),
-                                    })
-                                }
-                                disabled={!painScale.numeric}
-                            />
-                            <p>/10</p>
-                        </div>
-
-                        {/* Algo+ Score */}
-                        <div className=" flex flex-row items-center gap-2">
-                            <label className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={algoPlus.algoChecked}
-                                    onChange={e =>
-                                        setAlgoPlus({
-                                            ...algoPlus,
-                                            algoChecked: e.target.checked,
-                                        })
-                                    }
-                                />
-                                Algo plus Score
-                            </label>
-
-                            <input
-                                type="number"
-                                className="border p-1 rounded w-16 shrink-0"
-                                placeholder="Score"
-                                value={algoPlus.algoPlusScore ?? ""}
-                                onChange={e =>
-                                    setAlgoPlus({
-                                        ...algoPlus,
-                                        algoPlusScore: Number(e.target.value),
-                                    })
-                                }
-                                disabled={!algoPlus.algoChecked}
-                            />
-                            <p>/5</p>
-                        </div>
-
-                    </div>
                 </>
-                {/* Pain Scale Table */}
+
+                {/* Pain Scale and Algo+ Score */}
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-x-10 py-5">
+
+                    {/* Pain Scale */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium w-full sm:w-auto">Pain Scale</p>
+
+                        <label className="flex items-center gap-2 sm:pl-6">
+                            Numeric
+
+                            <input
+                                type="number"
+                                className="border p-1 rounded w-16 shrink-0"
+                                value={painScale.painScaleRate ?? 0}
+                                readOnly
+                            />
+
+                            <p>/10</p>
+                        </label>
+                    </div>
+
+                    {/* Algo+ Score */}
+                    <div className="flex flex-row items-center gap-2">
+                        <label className="flex items-center gap-2">
+                            Algo plus score
+
+                            <input
+                                type="number"
+                                className="border p-1 rounded w-16 shrink-0"
+                                value={
+                                    algoPlus.algoPlusScale
+                                        ? ALGO_OPTIONS.indexOf(algoPlus.algoPlusScale) + 1
+                                        : 0
+                                }
+                                readOnly
+                            />
+
+                            <p>/5</p>
+                        </label>
+                    </div>
+
+                </div>
+
+                {/* Table */}
                 <div className="overflow-x-auto">
                     <table className="min-w-40 w-full border-collapse text-left md:text-center md:text-base text-sm">
                         <thead className="hidden md:table-header-group text-lg">
@@ -1239,41 +1222,35 @@ export default function PatientForm() {
                         </thead>
 
                         <tbody className="md:table-row-group">
+
                             <tr className="border block md:table-row">
-                                <td className="text-center items-center font-semibold p-2 block md:hidden border-b text-base">
+                                <td className="text-center font-semibold p-2 block md:hidden border-b text-base">
                                     Numerical Scale
                                 </td>
+
                                 <td className="border-b md:border p-2 align-top block md:table-cell" rowSpan={5}>
                                     <PainScaleRating
                                         value={painScale.painScaleRate}
-                                        onChange={val =>
-                                            setPainScale({ ...painScale, painScaleRate: val })
+                                        onChange={(val) =>
+                                            setPainScale({
+                                                ...painScale,
+                                                painScaleRate: val,
+                                            })
                                         }
                                     />
                                 </td>
-                                <td className="border-b p-2 block md:hidden">
-                                    Pain management is satisfactory when the score remains strictly &lt; 4
-                                </td>
-                                <td className="md:border border-b p-2 text-center items-center font-semibold block md:hidden text-base">
-                                    Algo plus scale (for patients not able to communicate)
-                                </td>
+
                                 <td className="md:border p-2 text-left md:table-cell">
                                     <label className="flex gap-x-2">
                                         <input
-                                            type="checkbox"
-                                            checked={algoPlus.algoPlusScale.includes("Facial expressions")}
-                                            onChange={e =>
-                                                setAlgoPlus({
-                                                    ...algoPlus,
-                                                    algoPlusScale: e.target.checked
-                                                        ? [...algoPlus.algoPlusScale, "Facial expressions"]
-                                                        : algoPlus.algoPlusScale.filter((v) => v !== "Facial expressions"),
-                                                })
+                                            type="radio"
+                                            name="algoPlus"
+                                            checked={algoPlus.algoPlusScale === "Facial expressions"}
+                                            onChange={() =>
+                                                setAlgoPlus({ ...algoPlus, algoPlusScale: "Facial expressions" })
                                             }
                                         />
-                                        <span className="leading-tight">
-                                            1. Facial expressions: Frowning, grimacing, wincing, clenched teeth, unexpressive.
-                                        </span>
+                                        <span>1. Facial expressions</span>
                                     </label>
                                 </td>
                             </tr>
@@ -1282,20 +1259,14 @@ export default function PatientForm() {
                                 <td className="border-x p-2 text-left md:table-cell">
                                     <label className="flex gap-x-2">
                                         <input
-                                            type="checkbox"
-                                            checked={algoPlus.algoPlusScale.includes("Look")}
-                                            onChange={e =>
-                                                setAlgoPlus({
-                                                    ...algoPlus,
-                                                    algoPlusScale: e.target.checked
-                                                        ? [...algoPlus.algoPlusScale, "Look"]
-                                                        : algoPlus.algoPlusScale.filter((v) => v !== "Look"),
-                                                })
+                                            type="radio"
+                                            name="algoPlus"
+                                            checked={algoPlus.algoPlusScale === "Look"}
+                                            onChange={() =>
+                                                setAlgoPlus({ ...algoPlus, algoPlusScale: "Look" })
                                             }
                                         />
-                                        <span className="leading-tight">
-                                            2. Look: Inattentive, blank stare, distant or imploring, teary eyed, closed eyes.
-                                        </span>
+                                        <span>2. Look</span>
                                     </label>
                                 </td>
                             </tr>
@@ -1304,67 +1275,50 @@ export default function PatientForm() {
                                 <td className="border-x p-2 text-left md:table-cell">
                                     <label className="flex gap-x-2">
                                         <input
-                                            type="checkbox"
-                                            checked={algoPlus.algoPlusScale.includes("Complaints")}
-                                            onChange={e =>
-                                                setAlgoPlus({
-                                                    ...algoPlus,
-                                                    algoPlusScale: e.target.checked
-                                                        ? [...algoPlus.algoPlusScale, "Complaints"]
-                                                        : algoPlus.algoPlusScale.filter((v) => v !== "Complaints"),
-                                                })
+                                            type="radio"
+                                            name="algoPlus"
+                                            checked={algoPlus.algoPlusScale === "Complaints"}
+                                            onChange={() =>
+                                                setAlgoPlus({ ...algoPlus, algoPlusScale: "Complaints" })
                                             }
                                         />
-                                        <span className="leading-tight">
-                                            3. Complaints: “Ow-ouch”, that hurts, groaning, screaming.
-                                        </span>
+                                        <span>3. Complaints</span>
                                     </label>
                                 </td>
                             </tr>
 
                             <tr className="md:border-b block md:table-row">
                                 <td className="border p-2 text-left md:table-cell">
-                                    <label className="flex gap-x-2">                                    <input
-                                        type="checkbox"
-                                        checked={algoPlus.algoPlusScale.includes("Body position")}
-                                        onChange={e =>
-                                            setAlgoPlus({
-                                                ...algoPlus,
-                                                algoPlusScale: e.target.checked
-                                                    ? [...algoPlus.algoPlusScale, "Body position"]
-                                                    : algoPlus.algoPlusScale.filter((v) => v !== "Body position"),
-                                            })
-                                        }
-                                    />
-                                        <span className="leading-tight">
-                                            4. Body position: Withdrawn, guarded, refuses to move, frozen posture.
-                                        </span>
-                                    </label>
-                                </td>
-                            </tr>
-                            <tr className="md:border block md:table-row">
-                                <td className="border-x p-2 text-left md:table-cell">
                                     <label className="flex gap-x-2">
                                         <input
-                                            type="checkbox"
-                                            checked={algoPlus.algoPlusScale.includes("Atypical behavior")}
-                                            onChange={e =>
-                                                setAlgoPlus({
-                                                    ...algoPlus,
-                                                    algoPlusScale: e.target.checked
-                                                        ? [...algoPlus.algoPlusScale, "Atypical behavior"]
-                                                        : algoPlus.algoPlusScale.filter((v) => v !== "Atypical behavior"),
-                                                })
+                                            type="radio"
+                                            name="algoPlus"
+                                            checked={algoPlus.algoPlusScale === "Body position"}
+                                            onChange={() =>
+                                                setAlgoPlus({ ...algoPlus, algoPlusScale: "Body position" })
                                             }
                                         />
-                                        <span className="leading-tight">
-                                            5. Atypical behavior: Agitation, aggressivity, grabbing onto something or someone.
-                                        </span>
+                                        <span>4. Body position</span>
                                     </label>
                                 </td>
                             </tr>
 
-                            {/* Last row */}
+                            <tr className="md:border block md:table-row">
+                                <td className="border-x p-2 text-left md:table-cell">
+                                    <label className="flex gap-x-2">
+                                        <input
+                                            type="radio"
+                                            name="algoPlus"
+                                            checked={algoPlus.algoPlusScale === "Atypical behavior"}
+                                            onChange={() =>
+                                                setAlgoPlus({ ...algoPlus, algoPlusScale: "Atypical behavior" })
+                                            }
+                                        />
+                                        <span>5. Atypical behavior</span>
+                                    </label>
+                                </td>
+                            </tr>
+
                             <tr className="block md:table-row">
                                 <td className="border p-2 hidden md:table-cell">
                                     Pain management is satisfactory when the score remains strictly &lt; 4
@@ -1373,9 +1327,11 @@ export default function PatientForm() {
                                     Pain management is satisfactory when the score remains 2
                                 </td>
                             </tr>
+
                         </tbody>
                     </table>
                 </div>
+
             </AccordionSection>
 
 
@@ -1605,7 +1561,6 @@ export default function PatientForm() {
 
             </AccordionSection>
 
-
             {/* Treatment Plan */}
             <AccordionSection
                 title="Treatment Plan"
@@ -1614,7 +1569,7 @@ export default function PatientForm() {
                 setOpenSection={setOpenSection}
             >
                 <div className="w-full overflow-x-auto">
-                    <table className="w-full table-auto text-sm md:text-base border">
+                    <table className="min-w-175 w-full table-auto text-sm md:text-base border">
                         <thead>
                             <tr>
                                 <th className="border p-2 w-10">#</th>

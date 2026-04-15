@@ -5,8 +5,6 @@ import {
   updatePatient,
   createPatient,
   deletePatient,
-  archivePatientApi,
-  unarchivePatientApi,
 } from "../../api/patientApi";
 
 type PatientStore = {
@@ -20,8 +18,8 @@ type PatientStore = {
   savePatient: (patient: Patient) => Promise<void>;
   deletePatient: (id: string) => Promise<void>;
 
-  archivePatient: (id: string) => Promise<void>;
-  unarchivePatient: (id: string) => Promise<void>;
+  // archivePatient: (id: string) => Promise<void>;
+  // unarchivePatient: (id: string) => Promise<void>;
 };
 
 export const usePatientStore = create<PatientStore>((set) => ({
@@ -75,31 +73,31 @@ export const usePatientStore = create<PatientStore>((set) => ({
     }));
   },
 
-  archivePatient: async (id: string) => {
-    try {
-      await archivePatientApi(id);
+  // archivePatient: async (id: string) => {
+  //   try {
+  //     await archivePatientApi(id);
 
-      set((state) => ({
-        patients: state.patients.map((p) =>
-          p._id === id ? { ...p, isArchived: true } : p,
-        ),
-      }));
-    } catch (err) {
-      console.error("Archive failed", err);
-    }
-  },
+  //     set((state) => ({
+  //       patients: state.patients.map((p) =>
+  //         p._id === id ? { ...p, isArchived: true } : p,
+  //       ),
+  //     }));
+  //   } catch (err) {
+  //     console.error("Archive failed", err);
+  //   }
+  // },
 
-  unarchivePatient: async (id: string) => {
-    try {
-      await unarchivePatientApi(id);
+  // unarchivePatient: async (id: string) => {
+  //   try {
+  //     await unarchivePatientApi(id);
 
-      set((state) => ({
-        patients: state.patients.map((p) =>
-          p._id === id ? { ...p, isArchived: false } : p,
-        ),
-      }));
-    } catch (err) {
-      console.error("Unarchive failed", err);
-    }
-  },
+  //     set((state) => ({
+  //       patients: state.patients.map((p) =>
+  //         p._id === id ? { ...p, isArchived: false } : p,
+  //       ),
+  //     }));
+  //   } catch (err) {
+  //     console.error("Unarchive failed", err);
+  //   }
+  // },
 }));

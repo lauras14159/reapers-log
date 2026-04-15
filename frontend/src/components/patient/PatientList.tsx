@@ -68,7 +68,7 @@ export default function PatientList() {
             {/* List */}
             <div className="flex flex-col">
                 {filteredPatients.map((patient) => (
-                    <PatientCard key={patient.id} patient={patient} />
+                    <PatientCard key={patient._id} patient={patient} />
                 ))}
             </div>
         </div>

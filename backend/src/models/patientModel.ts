@@ -85,7 +85,7 @@ export interface IPatient extends Document {
     }[];
   }[];
 
-  isArchived?: boolean;
+  // isArchived?: boolean;
 }
 
 const patientSchema: Schema = new Schema({
@@ -99,7 +99,7 @@ const patientSchema: Schema = new Schema({
   precautions: { type: String, default: "" },
   history: { type: String, default: "" },
 
-  patientCode: { type: String, required: false, unique: true },
+  patientCode: { type: String, required: false, unique: false },
 
   dateOfAccident: { type: String },
   firstSessionDate: { type: String },
@@ -216,7 +216,7 @@ const patientSchema: Schema = new Schema({
     },
   ],
 
-  isArchived: { type: Boolean, default: false },
+  // isArchived: { type: Boolean, default: false },
 });
 
 export default mongoose.model<IPatient>("Patient", patientSchema);

@@ -14,7 +14,7 @@ export default function PatientForm() {
     // Patient state
     const [patient, setPatient] = useState<Patient>({
         _id: undefined,
-        id: "",
+        id: undefined,
         patientCode: "",
         fullName: "",
         age: 0,

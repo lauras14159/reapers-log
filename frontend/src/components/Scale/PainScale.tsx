@@ -19,7 +19,7 @@ export default function PainScaleRating({ value = 0, onChange }: PainScaleProps)
     };
 
     return (
-        <div className="w-full max-w-xl p-4">
+        <div className="w-full max-w-xl p-4 md:w-auto ">
             <h3 className="text-sm font-semibold mb-2">
                 Pain Score (0–10 Numerical Rating)
             </h3>

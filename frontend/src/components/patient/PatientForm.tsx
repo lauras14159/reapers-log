@@ -298,7 +298,7 @@ export default function PatientForm() {
             return;
         }
 
-        const existingPatient = patients.find((p) => p.id === id); if (!existingPatient) return;
+        const existingPatient = patients.find((p) => p._id === id); if (!existingPatient) return;
 
         setPatient(existingPatient);
 
@@ -1221,14 +1221,33 @@ export default function PatientForm() {
                             </tr>
                         </thead>
 
-                        <tbody className="md:table-row-group">
+                        <tbody className="md:table-row-group w-full">
 
-                            <tr className="border block md:table-row">
-                                <td className="text-center font-semibold p-2 block md:hidden border-b text-base">
-                                    Numerical Scale
+                            <tr className="block md:hidden w-full">
+                                <td className="w-full p-2 border border-b-0">
+                                    <PainScaleRating
+                                        value={painScale.painScaleRate}
+                                        onChange={(val) =>
+                                            setPainScale({
+                                                ...painScale,
+                                                painScaleRate: val,
+                                            })
+                                        }
+                                    />
                                 </td>
+                            </tr>
+                            <tr className="block md:hidden w-full border-t border-l border-r md:border">
+                                <div className="text-left p-2">
+                                    Pain management is satisfactory when the score remains strictly <br />
+                                    &lt; 4
+                                </div>
+                            </tr>
 
-                                <td className="border-b md:border p-2 align-top block md:table-cell" rowSpan={5}>
+                            <tr className="block md:table-row w-full border-t border-l border-r md:border">
+                                <td
+                                    className="hidden md:table-cell border p-2 align-top w-full md:w-auto "
+                                    rowSpan={5}
+                                >
                                     <PainScaleRating
                                         value={painScale.painScaleRate}
                                         onChange={(val) =>
@@ -1240,8 +1259,8 @@ export default function PatientForm() {
                                     />
                                 </td>
 
-                                <td className="md:border p-2 text-left md:table-cell">
-                                    <label className="flex gap-x-2">
+                                <td className="w-full md:w-auto border-b p-2 text-left block md:table-cell">
+                                    <label className="flex gap-x-2 w-full">
                                         <input
                                             type="radio"
                                             name="algoPlus"
@@ -1255,9 +1274,9 @@ export default function PatientForm() {
                                 </td>
                             </tr>
 
-                            <tr className="md:border-b block md:table-row">
-                                <td className="border-x p-2 text-left md:table-cell">
-                                    <label className="flex gap-x-2">
+                            <tr className="block md:table-row w-full border-l border-r">
+                                <td className="w-full md:w-auto border-b p-2 text-left block md:table-cell">
+                                    <label className="flex gap-x-2 w-full">
                                         <input
                                             type="radio"
                                             name="algoPlus"
@@ -1271,9 +1290,9 @@ export default function PatientForm() {
                                 </td>
                             </tr>
 
-                            <tr className="md:border-b block md:table-row">
-                                <td className="border-x p-2 text-left md:table-cell">
-                                    <label className="flex gap-x-2">
+                            <tr className="block md:table-row w-full border-l border-r">
+                                <td className="w-full md:w-auto border-b p-2 text-left block md:table-cell">
+                                    <label className="flex gap-x-2 w-full">
                                         <input
                                             type="radio"
                                             name="algoPlus"
@@ -1287,9 +1306,9 @@ export default function PatientForm() {
                                 </td>
                             </tr>
 
-                            <tr className="md:border-b block md:table-row">
-                                <td className="border p-2 text-left md:table-cell">
-                                    <label className="flex gap-x-2">
+                            <tr className="block md:table-row w-full border-l border-r">
+                                <td className="w-full md:w-auto border-b p-2 text-left block md:table-cell">
+                                    <label className="flex gap-x-2 w-full">
                                         <input
                                             type="radio"
                                             name="algoPlus"
@@ -1303,9 +1322,9 @@ export default function PatientForm() {
                                 </td>
                             </tr>
 
-                            <tr className="md:border block md:table-row">
-                                <td className="border-x p-2 text-left md:table-cell">
-                                    <label className="flex gap-x-2">
+                            <tr className="block md:table-row w-full border-l border-r">
+                                <td className="w-full md:w-auto p-2 text-left block md:table-cell">
+                                    <label className="flex gap-x-2 w-full">
                                         <input
                                             type="radio"
                                             name="algoPlus"
@@ -1319,11 +1338,11 @@ export default function PatientForm() {
                                 </td>
                             </tr>
 
-                            <tr className="block md:table-row">
-                                <td className="border p-2 hidden md:table-cell">
-                                    Pain management is satisfactory when the score remains strictly &lt; 4
+                            <tr className="block md:table-row w-full border">
+                                <td className="md:table-cell p-2 hidden">
+                                    Pain management is satisfactory when the score remains strictly <br /> &lt; 4
                                 </td>
-                                <td className="border p-2 text-left md:table-cell">
+                                <td className="w-full md:w-auto p-2 text-left block md:table-cell border-t md:border-l">
                                     Pain management is satisfactory when the score remains 2
                                 </td>
                             </tr>

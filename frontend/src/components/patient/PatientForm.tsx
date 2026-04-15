@@ -14,7 +14,7 @@ export default function PatientForm() {
     // Patient state
     const [patient, setPatient] = useState<Patient>({
         _id: undefined,
-        id: undefined,
+        id: "",
         patientCode: "",
         fullName: "",
         age: 0,
@@ -298,7 +298,7 @@ export default function PatientForm() {
             return;
         }
 
-        const existingPatient = patients.find((p) => p._id === id); if (!existingPatient) return;
+        const existingPatient = patients.find((p) => p.id === id); if (!existingPatient) return;
 
         setPatient(existingPatient);
 

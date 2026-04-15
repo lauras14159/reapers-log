@@ -66,3 +66,31 @@ export const deletePatient = async (id: string) => {
     method: "DELETE",
   });
 };
+
+export const archivePatientApi = async (id: string) => {
+  const res = await fetch(`${BASE_URL}/${id}/archive`, {
+    method: "PATCH",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("ARCHIVE ERROR:", text);
+    throw new Error("Failed to archive patient");
+  }
+
+  return await res.json();
+};
+
+export const unarchivePatientApi = async (id: string) => {
+  const res = await fetch(`${BASE_URL}/${id}/unarchive`, {
+    method: "PATCH",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("UNARCHIVE ERROR:", text);
+    throw new Error("Failed to unarchive patient");
+  }
+
+  return await res.json();
+};

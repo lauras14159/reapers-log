@@ -1,6 +1,6 @@
 export type Patient = {
   _id: any;
-  id?: string; // internal (mongo _id later)
+  id: string; // internal (mongo _id later)
   patientCode: string; // P001 (UI only)
   fullName: string;
   age: number;
@@ -42,6 +42,8 @@ export type Patient = {
 
   //FunctionalField
   functionalField?: FunctionalField;
+
+  isArchived?: boolean;
 };
 
 export type UpperLimbsROM = {

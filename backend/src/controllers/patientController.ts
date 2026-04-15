@@ -3,7 +3,7 @@ import Patient from "../models/patientModel";
 
 export const getPatients = async (req: Request, res: Response) => {
   try {
-    const patients = await Patient.find();
+    const patients = await Patient.find({ isArchived: false });
     res.json(patients);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -53,6 +53,41 @@ export const deletePatient = async (req: Request, res: Response) => {
     }
 
     res.json({ message: "Patient deleted" });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+export const archivePatient = async (req: Request, res: Response) => {
+  try {
+    const updated = await Patient.findByIdAndUpdate(
+      req.params.id,
+      { isArchived: true },
+      { new: true },
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.json(updated);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const unarchivePatient = async (req: Request, res: Response) => {
+  try {
+    const updated = await Patient.findByIdAndUpdate(
+      req.params.id,
+      { isArchived: false },
+      { new: true },
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.json(updated);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

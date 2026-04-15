@@ -2,6 +2,8 @@ import type { Patient } from '../types/patient';
 import { usePatientStore } from '../hooks/usePatients';
 import { useNavigate } from 'react-router-dom';
 import { Bin } from '../../svg/bin';
+import { Archive } from "lucide-react";
+
 
 type PatientCardProps = {
     patient: Pick<Patient, 'id' | 'patientCode' | 'fullName' | 'firstSessionDate' | 'admissionType' | 'admissionTypeOther'>;
@@ -14,6 +16,7 @@ export default function PatientCard({ patient }: PatientCardProps) {
         setCurrentPatient(patient as Patient);
         navigate(`/patient/${patient.id}`);
     };
+    const { archivePatient } = usePatientStore();
 
     return (
         <div className="flex flex-row sm:items-center sm:justify-between justify-center py-5 md:py-2 px-4 text-sm gap-2 sm:gap-4 border-b border-gray-800 dark:border-white">
@@ -49,6 +52,17 @@ export default function PatientCard({ patient }: PatientCardProps) {
                 >
                     <Bin width={20} fill="#f70000" />
                 </button>
+
+                <button
+                    onClick={() => {
+                        if (!patient.id) return;
+                        archivePatient(patient.id);
+                    }}
+                    className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded cursor-pointer"
+                >
+                    <Archive size={18} />
+                </button>
+
             </div>
         </div>
     );

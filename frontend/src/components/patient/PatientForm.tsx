@@ -298,7 +298,8 @@ export default function PatientForm() {
             return;
         }
 
-        const existingPatient = patients.find((p) => p._id === id); if (!existingPatient) return;
+        const existingPatient = patients.find((p) => p.id === id);
+        if (!existingPatient) return;
 
         setPatient(existingPatient);
 
@@ -384,10 +385,9 @@ export default function PatientForm() {
 
         const safe = (v: any, fallback: any) =>
             v === undefined ? fallback : v;
-        const { algoPlus: _, ...restPatient } = patient;
+        const { id, algoPlus: _, ...restPatient } = patient;
         const finalPatient = {
             ...restPatient,
-            id: patient.id || crypto.randomUUID(),
             patientCode: isEdit ? patient.patientCode : newCode,
             functionalField: safe(functionalField, {
                 dateFunctionalField: [],
@@ -449,6 +449,7 @@ export default function PatientForm() {
 
         navigate("/");
     };
+
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">
@@ -1237,10 +1238,10 @@ export default function PatientForm() {
                                 </td>
                             </tr>
                             <tr className="block md:hidden w-full border-t border-l border-r md:border">
-                                <div className="text-left p-2">
+                                <td className="text-left p-2">
                                     Pain management is satisfactory when the score remains strictly <br />
                                     &lt; 4
-                                </div>
+                                </td>
                             </tr>
 
                             <tr className="block md:table-row w-full border-t border-l border-r md:border">

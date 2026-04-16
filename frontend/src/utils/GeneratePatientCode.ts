@@ -6,10 +6,9 @@ export default function generatePatientCode(
   const numbers = patients
     .map((p) => p.patientCode)
     .filter(Boolean)
-    .map((code) => parseInt(code!.replace("P", "")))
-    .sort((a, b) => b - a);
+    .map((code) => Number(code!.replace("P", "")));
 
-  const next = (numbers[0] || 0) + 1;
+  const max = Math.max(...numbers);
 
-  return `P${String(next).padStart(3, "0")}`;
+  return `P${String(max + 1).padStart(3, "0")}`;
 }

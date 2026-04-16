@@ -3,7 +3,7 @@ const BASE_URL = `${API}/api/patients`;
 
 //  GET
 export const getPatients = async () => {
-  const res = await fetch(BASE_URL);
+  const res = await fetchWithRetry(BASE_URL);
   const data = await res.json();
 
   return data.map((p: any) => ({
@@ -14,7 +14,7 @@ export const getPatients = async () => {
 
 // CREATE
 export const createPatient = async (data: any) => {
-  const res = await fetch(BASE_URL, {
+  const res = await fetchWithRetry(BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -38,7 +38,7 @@ export const createPatient = async (data: any) => {
 
 // UPDATE
 export const updatePatient = async (id: string, data: any) => {
-  const res = await fetch(`${BASE_URL}/${id}`, {
+  const res = await fetchWithRetry(`${BASE_URL}/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -62,13 +62,13 @@ export const updatePatient = async (id: string, data: any) => {
 
 // DELETE
 export const deletePatient = async (id: string) => {
-  await fetch(`${BASE_URL}/${id}`, {
+  await fetchWithRetry(`${BASE_URL}/${id}`, {
     method: "DELETE",
   });
 };
 
 // export const archivePatientApi = async (id: string) => {
-//   const res = await fetch(`${BASE_URL}/${id}/archive`, {
+//   const res = await fetchWithRetry(`${BASE_URL}/${id}/archive`, {
 //     method: "PATCH",
 //   });
 
@@ -82,7 +82,7 @@ export const deletePatient = async (id: string) => {
 // };
 
 // export const unarchivePatientApi = async (id: string) => {
-//   const res = await fetch(`${BASE_URL}/${id}/unarchive`, {
+//   const res = await fetchWithRetry(`${BASE_URL}/${id}/unarchive`, {
 //     method: "PATCH",
 //   });
 
@@ -94,3 +94,21 @@ export const deletePatient = async (id: string) => {
 
 //   return await res.json();
 // };
+
+const fetchWithRetry = async (
+  url: string,
+  options?: RequestInit,
+  retries = 2,
+) => {
+  try {
+    const res = await fetch(url, options);
+    return res;
+  } catch (err) {
+    if (retries === 0) throw err;
+
+    console.log("Retrying request...");
+    await new Promise((r) => setTimeout(r, 2000));
+
+    return fetchWithRetry(url, options, retries - 1);
+  }
+};

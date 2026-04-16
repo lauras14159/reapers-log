@@ -8,26 +8,24 @@ export default function PatientList() {
 
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState<"name" | "date">("name");
-    const [filterDate] = useState("");//setFilterDate
+    const [filterDate] = useState("");
+    const [loading, setLoading] = useState(true);
 
     const filteredPatients = useMemo(() => {
         let result = [...patients];
 
-        // Search
         if (search) {
             result = result.filter((p) =>
                 p.fullName.toLowerCase().includes(search.toLowerCase())
             );
         }
 
-        // Filter by date
         if (filterDate) {
             result = result.filter(
                 (p) => p.firstSessionDate === filterDate
             );
         }
 
-        // Sort
         if (sortBy === "name") {
             result.sort((a, b) =>
                 a.fullName.localeCompare(b.fullName)
@@ -44,8 +42,34 @@ export default function PatientList() {
     }, [patients, search, sortBy, filterDate]);
 
     useEffect(() => {
-        fetchPatients();
+        const init = async () => {
+            try {
+                await fetch(`${import.meta.env.VITE_API_URL}/api/patients`);
+            } catch {
+                console.log("Waking server...");
+            }
+
+            await fetchPatients();
+            setLoading(false);
+        };
+
+        init();
     }, []);
+
+    // 🔥 LOADING UI (spinner)
+    if (loading && patients.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[60vh] gap-3">
+
+                {/* Spinner */}
+                <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+
+                <p className="text-gray-500 text-sm">
+                    Connecting to server...
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="overflow-hidden">
@@ -68,9 +92,10 @@ export default function PatientList() {
             {/* List */}
             <div className="flex flex-col">
                 {filteredPatients.map((patient) => (
-                    <PatientCard key={patient._id} patient={patient} />
+                    <PatientCard key={patient.id} patient={patient} />
                 ))}
             </div>
+
         </div>
     );
 }

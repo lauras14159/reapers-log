@@ -8,7 +8,7 @@ export const getPatients = async () => {
 
   return data.map((p: any) => ({
     ...p,
-    id: p._id ? p._id.toString() : undefined, // map Mongo → frontend
+    _id: p._id.toString(),
   }));
 };
 
@@ -32,7 +32,7 @@ export const createPatient = async (data: any) => {
 
   return {
     ...json,
-    id: json._id,
+    _id: json._id.toString(),
   };
 };
 
@@ -56,7 +56,7 @@ export const updatePatient = async (id: string, data: any) => {
 
   return {
     ...json,
-    id: json._id,
+    _id: json._id.toString(),
   };
 };
 
@@ -67,33 +67,33 @@ export const deletePatient = async (id: string) => {
   });
 };
 
-// export const archivePatientApi = async (id: string) => {
-//   const res = await fetchWithRetry(`${BASE_URL}/${id}/archive`, {
-//     method: "PATCH",
-//   });
+export const archivePatientApi = async (id: string) => {
+  const res = await fetchWithRetry(`${BASE_URL}/${id}/archive`, {
+    method: "PATCH",
+  });
 
-//   if (!res.ok) {
-//     const text = await res.text();
-//     console.error("ARCHIVE ERROR:", text);
-//     throw new Error("Failed to archive patient");
-//   }
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("ARCHIVE ERROR:", text);
+    throw new Error("Failed to archive patient");
+  }
 
-//   return await res.json();
-// };
+  return await res.json();
+};
 
-// export const unarchivePatientApi = async (id: string) => {
-//   const res = await fetchWithRetry(`${BASE_URL}/${id}/unarchive`, {
-//     method: "PATCH",
-//   });
+export const unarchivePatientApi = async (id: string) => {
+  const res = await fetchWithRetry(`${BASE_URL}/${id}/unarchive`, {
+    method: "PATCH",
+  });
 
-//   if (!res.ok) {
-//     const text = await res.text();
-//     console.error("UNARCHIVE ERROR:", text);
-//     throw new Error("Failed to unarchive patient");
-//   }
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("UNARCHIVE ERROR:", text);
+    throw new Error("Failed to unarchive patient");
+  }
 
-//   return await res.json();
-// };
+  return await res.json();
+};
 
 const fetchWithRetry = async (
   url: string,

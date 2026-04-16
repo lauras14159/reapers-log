@@ -12,8 +12,7 @@ export default function PatientList() {
     const [loading, setLoading] = useState(true);
 
     const filteredPatients = useMemo(() => {
-        let result = [...patients];
-
+        let result = patients.filter((p) => !p.isArchived);
         if (search) {
             result = result.filter((p) =>
                 p.fullName.toLowerCase().includes(search.toLowerCase())
@@ -43,12 +42,6 @@ export default function PatientList() {
 
     useEffect(() => {
         const init = async () => {
-            try {
-                await fetch(`${import.meta.env.VITE_API_URL}/api/patients`);
-            } catch {
-                console.log("Waking server...");
-            }
-
             await fetchPatients();
             setLoading(false);
         };
@@ -56,7 +49,7 @@ export default function PatientList() {
         init();
     }, []);
 
-    // 🔥 LOADING UI (spinner)
+    // LOADING(spinner)
     if (loading && patients.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh] gap-3">
@@ -92,7 +85,7 @@ export default function PatientList() {
             {/* List */}
             <div className="flex flex-col">
                 {filteredPatients.map((patient) => (
-                    <PatientCard key={patient.id} patient={patient} />
+                    <PatientCard key={patient._id} patient={patient} />
                 ))}
             </div>
 

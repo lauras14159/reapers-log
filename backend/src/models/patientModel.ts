@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPatient extends Document {
-  id: string;
   patientCode: string;
   fullName: string;
   age: number;
@@ -37,6 +36,8 @@ export interface IPatient extends Document {
 
   period?: string;
 
+  motorDates?: string[];
+
   musculoskeletal?: {
     rangeOfMotion: Array<"Right" | "Left">;
     upperLimbsROM?: { shoulder?: string; elbow?: string; wrist?: string };
@@ -51,7 +52,7 @@ export interface IPatient extends Document {
   };
 
   functionalField?: {
-    dateFunctionalField: [string];
+    dateFunctionalField: string[];
     sitting: [Number];
     standing: [Number];
     usingLivingAid: [Number];
@@ -85,7 +86,7 @@ export interface IPatient extends Document {
     }[];
   }[];
 
-  // isArchived?: boolean;
+  isArchived?: boolean;
 }
 
 const patientSchema: Schema = new Schema({
@@ -216,7 +217,7 @@ const patientSchema: Schema = new Schema({
     },
   ],
 
-  // isArchived: { type: Boolean, default: false },
+  isArchived: { type: Boolean, default: false },
 });
 
 export default mongoose.model<IPatient>("Patient", patientSchema);

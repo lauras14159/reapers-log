@@ -7,7 +7,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { usePatientStore } from "../hooks/usePatients";
 import { Bin } from "../../svg/bin";
-import generatePatientCode from "../../utils/GeneratePatientCode";
 import { AccordionSection } from "../Accordion/AccordionSection";
 
 export default function PatientForm() {
@@ -253,8 +252,7 @@ export default function PatientForm() {
         updated[field][index] = value;
         setTreatmentPlan(updated);
     };
-
-    const { id } = useParams();
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const isEdit = !!id;
 
@@ -291,18 +289,18 @@ export default function PatientForm() {
         "Atypical behavior",
     ] as const;
 
+
     useEffect(() => {
         if (!id) return;
         if (patients.length === 0) {
             fetchPatients();
             return;
         }
+        const existingPatient = patients.find((p) => p._id === id);
 
-        const existingPatient = patients.find((p) => p.id === id);
         if (!existingPatient) return;
 
         setPatient(existingPatient);
-
         setPtSchedule((existingPatient).ptSchedule || []);
 
         const ff = existingPatient.functionalField;
@@ -374,9 +372,11 @@ export default function PatientForm() {
         );
     }, [id, patients]);
 
+    const generatePatientCode = () => {
+        return "PT-" + Date.now().toString().slice(-6);
+    };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const newCode = generatePatientCode(patients);
         const score =
             algoPlus.algoPlusScale &&
                 ALGO_OPTIONS.includes(algoPlus.algoPlusScale)
@@ -385,10 +385,11 @@ export default function PatientForm() {
 
         const safe = (v: any, fallback: any) =>
             v === undefined ? fallback : v;
-        const { id, algoPlus: _, ...restPatient } = patient;
+        const { id, algoPlus: _, patientCode, ...restPatient } = patient;
         const finalPatient = {
+            // ONLY send patientCode if valid
+            patientCode: patientCode || generatePatientCode(),
             ...restPatient,
-            patientCode: isEdit ? patient.patientCode : newCode,
             functionalField: safe(functionalField, {
                 dateFunctionalField: [],
                 sitting: [],
@@ -446,10 +447,10 @@ export default function PatientForm() {
                 : undefined,
         };
         await savePatient(finalPatient);
-
+        await fetchPatients();
         navigate("/");
-    };
 
+    };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">
@@ -465,7 +466,7 @@ export default function PatientForm() {
                     <div className="flex flex-col shrink-0 max-w-[40%]">
                         <label className="block font-medium mb-1 invisible">Code</label>
                         <div className="px-3 py-2 dark:bg-gray-900 bg-gray-300 rounded truncate text-gray-800 dark:text-white">
-                            {patient?.patientCode || "P---"}
+                            {patient.patientCode}
                         </div>
                     </div>
 

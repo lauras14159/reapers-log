@@ -12,12 +12,26 @@ export const getPatients = async (req: Request, res: Response) => {
 
 export const createPatient = async (req: Request, res: Response) => {
   try {
-    const patient = await Patient.create(req.body);
+    const lastPatient = await Patient.findOne()
+      .sort({ createdAt: -1 })
+      .select("patientCode");
 
-    res.status(201).json(patient);
+    let nextNumber = 1;
+
+    if (lastPatient?.patientCode) {
+      const match = lastPatient.patientCode.match(/\d+/);
+      if (match) nextNumber = parseInt(match[0], 10) + 1;
+    }
+
+    const patientCode = `P${String(nextNumber).padStart(3, "0")}`;
+
+    const patient = await Patient.create({
+      ...req.body,
+      patientCode,
+    });
+
+    return res.status(201).json(patient);
   } catch (error: any) {
-    console.error("FULL ERROR:", error);
-
     return res.status(500).json({
       message: error.message,
       name: error.name,
@@ -57,38 +71,39 @@ export const deletePatient = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
-// export const archivePatient = async (req: Request, res: Response) => {
-//   try {
-//     const updated = await Patient.findByIdAndUpdate(
-//       req.params.id,
-//       { isArchived: true },
-//       { new: true },
-//     );
 
-//     if (!updated) {
-//       return res.status(404).json({ message: "Patient not found" });
-//     }
+export const archivePatient = async (req: Request, res: Response) => {
+  try {
+    const updated = await Patient.findByIdAndUpdate(
+      req.params.id,
+      { isArchived: true },
+      { new: true },
+    );
 
-//     res.json(updated);
-//   } catch (error: any) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
+    if (!updated) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
 
-// export const unarchivePatient = async (req: Request, res: Response) => {
-//   try {
-//     const updated = await Patient.findByIdAndUpdate(
-//       req.params.id,
-//       { isArchived: false },
-//       { new: true },
-//     );
+    res.json(updated);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-//     if (!updated) {
-//       return res.status(404).json({ message: "Patient not found" });
-//     }
+export const unarchivePatient = async (req: Request, res: Response) => {
+  try {
+    const updated = await Patient.findByIdAndUpdate(
+      req.params.id,
+      { isArchived: false },
+      { new: true },
+    );
 
-//     res.json(updated);
-//   } catch (error: any) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
+    if (!updated) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.json(updated);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -2,7 +2,7 @@ import type { Patient } from '../types/patient';
 import { usePatientStore } from '../hooks/usePatients';
 import { useNavigate } from 'react-router-dom';
 import { Bin } from '../../svg/bin';
-import { Archive } from "lucide-react";
+import { Archive, ArchiveRestoreIcon } from "lucide-react";
 
 
 type PatientCardProps = {
@@ -60,9 +60,9 @@ export default function PatientCard({ patient }: PatientCardProps) {
                             if (!patient._id) return;
                             unarchivePatient(patient._id);
                         }}
-                        className="text-xs text-blue-500 underline cursor-pointer hover:text-blue-700"
+                        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded cursor-pointer"
                     >
-                        Unarchive
+                        <ArchiveRestoreIcon size={18} />
                     </button>
                 ) : (
                     <button

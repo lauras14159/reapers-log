@@ -373,7 +373,7 @@ export default function PatientForm() {
     }, [id, patients]);
 
     const generatePatientCode = () => {
-        return "PT-" + Date.now().toString().slice(-6);
+        return "P-" + Date.now().toString().slice(-6);
     };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

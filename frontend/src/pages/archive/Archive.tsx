@@ -31,8 +31,6 @@ export default function ArchiveList() {
     }, []);
 
     const filteredArchived = useMemo(() => {
-        console.log("All patients:", patients);                                    // 👈 add
-        console.log("Archived patients:", patients.filter(p => p.isArchived));
         let result = patients.filter((p) => p.isArchived);
 
         if (search) {

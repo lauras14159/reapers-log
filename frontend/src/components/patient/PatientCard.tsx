@@ -16,7 +16,7 @@ export default function PatientCard({ patient }: PatientCardProps) {
         setCurrentPatient(patient as Patient);
         navigate(`/patient/${patient._id}`);
     };
-    const { archivePatient } = usePatientStore();
+    const { archivePatient, unarchivePatient } = usePatientStore();
 
     return (
         <div className="flex flex-row sm:items-center sm:justify-between justify-center py-5 md:py-2 px-4 text-sm gap-2 sm:gap-4 border-b border-gray-800 dark:border-white">
@@ -55,7 +55,15 @@ export default function PatientCard({ patient }: PatientCardProps) {
 
 
                 {patient.isArchived ? (
-                    <span className="text-xs text-gray-400">Archived</span>
+                    <button
+                        onClick={() => {
+                            if (!patient._id) return;
+                            unarchivePatient(patient._id);
+                        }}
+                        className="text-xs text-blue-500 underline cursor-pointer hover:text-blue-700"
+                    >
+                        Unarchive
+                    </button>
                 ) : (
                     <button
                         onClick={() => {

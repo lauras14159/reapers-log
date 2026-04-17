@@ -465,7 +465,7 @@ export default function PatientForm() {
                     {/* Code */}
                     <div className="flex flex-col shrink-0 max-w-[40%]">
                         <label className="block font-medium mb-1 invisible">Code</label>
-                        <div className="px-3 py-2 dark:bg-gray-900 bg-gray-300 rounded truncate text-gray-800 dark:text-white">
+                        <div className="p-5 dark:bg-gray-900 bg-gray-300 rounded truncate text-gray-800 dark:text-white">
                             {patient.patientCode}
                         </div>
                     </div>

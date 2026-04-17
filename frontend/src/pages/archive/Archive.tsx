@@ -9,23 +9,30 @@ export default function ArchiveList() {
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState<"name" | "date">("name");
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+
+    const load = async () => {
+        setLoading(true);
+        setError(false);
+        try {
+            await fetchPatients();
+        } catch (err) {
+            console.error("Failed to load:", err);
+            setError(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         let mounted = true;
-
-        const init = async () => {
-            await fetchPatients();
-            if (mounted) setLoading(false);
-        };
-
-        init();
-
-        return () => {
-            mounted = false;
-        };
-    }, [fetchPatients]);
+        if (mounted) load();
+        return () => { mounted = false; };
+    }, []);
 
     const filteredArchived = useMemo(() => {
+        console.log("All patients:", patients);                                    // 👈 add
+        console.log("Archived patients:", patients.filter(p => p.isArchived));
         let result = patients.filter((p) => p.isArchived);
 
         if (search) {
@@ -58,6 +65,20 @@ export default function ArchiveList() {
         );
     }
 
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+                <p className="text-gray-500">Failed to load. The server may be waking up.</p>
+                <button
+                    onClick={load}
+                    className="px-4 py-2 rounded border border-gray-800 hover:bg-gray-800 hover:text-white transition"
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="overflow-hidden">
             <PatientFilters
@@ -66,6 +87,14 @@ export default function ArchiveList() {
                 sortBy={sortBy}
                 onSortChange={setSortBy}
             />
+
+            <div className="hidden sm:flex items-center gap-4 p-4 text-sm font-semibold border-b border-gray-800 dark:border-white">
+                <p className="w-20 shrink-0">ID</p>
+                <p className="w-36">Name</p>
+                <p className="w-40">First Session Date</p>
+                <p>Admission Type</p>
+            </div>
+
 
             <div className="flex flex-col">
                 {filteredArchived.length === 0 ? (

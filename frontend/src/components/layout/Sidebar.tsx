@@ -110,7 +110,7 @@ function SidebarItem({
         >
             <Icon size={20} />
 
-            {!collapsed && <span>{label}</span>}
+            {(!collapsed || window.innerWidth < 768) && <span>{label}</span>}
         </NavLink>
     );
 }

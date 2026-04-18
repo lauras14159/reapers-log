@@ -289,7 +289,6 @@ export default function PatientForm() {
         "Atypical behavior",
     ] as const;
 
-
     useEffect(() => {
         if (!id) return;
         if (patients.length === 0) {
@@ -375,81 +374,87 @@ export default function PatientForm() {
     // const generatePatientCode = () => {
     //     return "P-" + Date.now().toString().slice(-6);
     // };
+    const [submitting, setSubmitting] = useState(false);
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const score =
-            algoPlus.algoPlusScale &&
-                ALGO_OPTIONS.includes(algoPlus.algoPlusScale)
-                ? ALGO_OPTIONS.indexOf(algoPlus.algoPlusScale) + 1
-                : 0;
+        if (submitting) return; // block double submission
+        setSubmitting(true);
+        try {
+            const score =
+                algoPlus.algoPlusScale &&
+                    ALGO_OPTIONS.includes(algoPlus.algoPlusScale)
+                    ? ALGO_OPTIONS.indexOf(algoPlus.algoPlusScale) + 1
+                    : 0;
 
-        const safe = (v: any, fallback: any) =>
-            v === undefined ? fallback : v;
-        const { id, algoPlus: _, patientCode, ...restPatient } = patient;
-        const finalPatient = {
-            // ONLY send patientCode if valid
-            ...(patient._id ? { patientCode } : {}),
-            ...restPatient,
-            functionalField: safe(functionalField, {
-                dateFunctionalField: [],
-                sitting: [],
-                standing: [],
-                usingLivingAid: [],
-                goingToRestroom: [],
-                stairs: [],
-                puttingShoesOrSocks: [],
-                walking10Meters: [],
-                total: [],
-            }),
+            const safe = (v: any, fallback: any) =>
+                v === undefined ? fallback : v;
+            const { id, algoPlus: _, patientCode, ...restPatient } = patient;
+            const finalPatient = {
+                // ONLY send patientCode if valid
+                ...(patient._id ? { patientCode } : {}),
+                ...restPatient,
+                functionalField: safe(functionalField, {
+                    dateFunctionalField: [],
+                    sitting: [],
+                    standing: [],
+                    usingLivingAid: [],
+                    goingToRestroom: [],
+                    stairs: [],
+                    puttingShoesOrSocks: [],
+                    walking10Meters: [],
+                    total: [],
+                }),
 
-            ptSchedule: safe(ptSchedule, []),
-            gaitTraining: safe(gaitTraining, []),
-            livingAids: safe(livingAids, []),
-            brace: safe(brace, { braceField: "" }),
-            sittingPosition: safe(sittingPosition, []),
-            algoPlus: {
-                algoChecked: !!algoPlus.algoPlusScale,
-                algoPlusScale: algoPlus.algoPlusScale,
-                algoPlusScore: score,
-            },
-            painScale: {
-                numeric: painScale.numeric,
-                painScaleRate: painScale.painScaleRate,
-                score: painScale.painScaleRate,
-            },
-            musculoskeletal: safe(musculoskeletal, {
-                rangeOfMotion: [],
-            }),
-            respiratory: safe(respiratory, {
-                breathType: [],
-                auscultation: [],
-                cough: [],
-                secretion: [],
-                secretionColor: [],
-            }),
-            motorTesting: safe(motorTesting, {
-                rightDates: [],
-                leftDates: [],
-                rows: [],
-            }),
-            treatmentPlan: safe(treatmentPlan, {
-                assessmentFindings: [],
-                goals: [],
-                prioritization: [],
-            }),
+                ptSchedule: safe(ptSchedule, []),
+                gaitTraining: safe(gaitTraining, []),
+                livingAids: safe(livingAids, []),
+                brace: safe(brace, { braceField: "" }),
+                sittingPosition: safe(sittingPosition, []),
+                algoPlus: {
+                    algoChecked: !!algoPlus.algoPlusScale,
+                    algoPlusScale: algoPlus.algoPlusScale,
+                    algoPlusScore: score,
+                },
+                painScale: {
+                    numeric: painScale.numeric,
+                    painScaleRate: painScale.painScaleRate,
+                    score: painScale.painScaleRate,
+                },
+                musculoskeletal: safe(musculoskeletal, {
+                    rangeOfMotion: [],
+                }),
+                respiratory: safe(respiratory, {
+                    breathType: [],
+                    auscultation: [],
+                    cough: [],
+                    secretion: [],
+                    secretionColor: [],
+                }),
+                motorTesting: safe(motorTesting, {
+                    rightDates: [],
+                    leftDates: [],
+                    rows: [],
+                }),
+                treatmentPlan: safe(treatmentPlan, {
+                    assessmentFindings: [],
+                    goals: [],
+                    prioritization: [],
+                }),
 
-            admissionTypeOther: patient.admissionType.includes("Other")
-                ? patient.admissionTypeOther || ""
-                : undefined,
+                admissionTypeOther: patient.admissionType.includes("Other")
+                    ? patient.admissionTypeOther || ""
+                    : undefined,
 
-            riskFactorsOther: patient.riskFactors.includes("Other")
-                ? patient.riskFactorsOther || ""
-                : undefined,
-        };
-        await savePatient(finalPatient);
-        await fetchPatients();
-        navigate("/");
-
+                riskFactorsOther: patient.riskFactors.includes("Other")
+                    ? patient.riskFactorsOther || ""
+                    : undefined,
+            };
+            await savePatient(finalPatient);
+            navigate("/");
+            // await fetchPatients();
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -1656,9 +1661,10 @@ export default function PatientForm() {
             <div className="md:justify-start justify-center flex">
                 <button
                     type="submit"
-                    className="hover:bg-[#1e2939] dark:hover:bg-blue-800 text-white py-2 bg-blue-700 rounded mt-4 duration-500 max-w-xs md:max-w-40 w-full"
+                    disabled={submitting}
+                    className="hover:bg-[#1e2939] dark:hover:bg-blue-800 text-white py-2 bg-blue-700 rounded mt-4 duration-500 max-w-xs md:max-w-40 w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {isEdit ? "Save" : "Submit"}
+                    {submitting ? "Saving..." : isEdit ? "Save" : "Submit"}
                 </button>
             </div>
         </form>

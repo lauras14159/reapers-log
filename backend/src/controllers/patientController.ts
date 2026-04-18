@@ -12,8 +12,9 @@ export const getPatients = async (req: Request, res: Response) => {
 
 export const createPatient = async (req: Request, res: Response) => {
   try {
+    const { patientCode: _, ...body } = req.body;
     const lastPatient = await Patient.findOne()
-      .sort({ createdAt: -1 })
+      .sort({ _id: -1 })
       .select("patientCode");
 
     let nextNumber = 1;
@@ -26,7 +27,7 @@ export const createPatient = async (req: Request, res: Response) => {
     const patientCode = `P-${String(nextNumber).padStart(3, "0")}`;
 
     const patient = await Patient.create({
-      ...req.body,
+      ...body,
       patientCode,
     });
 

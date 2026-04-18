@@ -40,7 +40,6 @@ export const usePatientStore = create<PatientStore>((set) => ({
   // CREATE / UPDATE
   savePatient: async (patient) => {
     try {
-      console.log("SAVE CALL:", patient);
       if (patient._id) {
         const updated = await updatePatient(patient._id, patient);
 

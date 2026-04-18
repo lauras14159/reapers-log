@@ -372,9 +372,9 @@ export default function PatientForm() {
         );
     }, [id, patients]);
 
-    const generatePatientCode = () => {
-        return "P-" + Date.now().toString().slice(-6);
-    };
+    // const generatePatientCode = () => {
+    //     return "P-" + Date.now().toString().slice(-6);
+    // };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const score =
@@ -388,7 +388,7 @@ export default function PatientForm() {
         const { id, algoPlus: _, patientCode, ...restPatient } = patient;
         const finalPatient = {
             // ONLY send patientCode if valid
-            patientCode: patientCode || generatePatientCode(),
+            ...(patient._id ? { patientCode } : {}),
             ...restPatient,
             functionalField: safe(functionalField, {
                 dateFunctionalField: [],

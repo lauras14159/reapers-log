@@ -23,7 +23,7 @@ export const createPatient = async (req: Request, res: Response) => {
       if (match) nextNumber = parseInt(match[0], 10) + 1;
     }
 
-    const patientCode = `P${String(nextNumber).padStart(3, "0")}`;
+    const patientCode = `P-${String(nextNumber).padStart(3, "0")}`;
 
     const patient = await Patient.create({
       ...req.body,
@@ -42,9 +42,11 @@ export const createPatient = async (req: Request, res: Response) => {
 
 export const updatePatient = async (req: Request, res: Response) => {
   try {
+    const { isArchived, patientCode, ...safeBody } = req.body;
+
     const updated = await Patient.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      { $set: safeBody },
       { new: true, runValidators: true },
     );
 

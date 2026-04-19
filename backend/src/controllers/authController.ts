@@ -12,8 +12,8 @@ const sendToken = (res: Response, userId: string) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: isProduction, // false locally, true in production
-    sameSite: isProduction ? "none" : "lax", // lax locally, none in production
+    secure: !!process.env.JWT_SECRET, // true on Render (has JWT_SECRET), false locally
+    sameSite: process.env.JWT_SECRET ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };

@@ -4,34 +4,25 @@ import jwt from "jsonwebtoken";
 import { AuthRequest } from "../middleware/authMiddleware";
 
 const sendToken = (res: Response, userId: string) => {
-  const token = jwt.sign({ id: userId }, process.env.JWT_SECRET!, {
+  const token = jwt.sign({ id: userId }, process.env.JWT_SECRET as string, {
     expiresIn: "7d",
   });
-
-  const isProduction = process.env.NODE_ENV === "production";
-
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: !!process.env.JWT_SECRET, // true on Render (has JWT_SECRET), false locally
-    sameSite: process.env.JWT_SECRET ? "none" : "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  return token; // ✅ just return it
 };
 
-// SIGNUP
+// In signup:
 export const signup = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
-
     const exists = await User.findOne({ email });
-    if (exists) {
+    if (exists)
       return res.status(400).json({ message: "Email already in use" });
-    }
 
     const user = await User.create({ name, email, password });
-    sendToken(res, user._id.toString());
+    const token = sendToken(res, user._id.toString());
 
     res.status(201).json({
+      token, // ✅ send token in body
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -41,19 +32,19 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
-// LOGIN
+// In login:
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
     if (!user || !(await user.comparePassword(password))) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    sendToken(res, user._id.toString());
+    const token = sendToken(res, user._id.toString());
 
     res.json({
+      token, // ✅ send token in body
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -63,13 +54,8 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-// LOGOUT
+// logout - just a simple response now
 export const logout = async (req: Request, res: Response) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
-  });
   res.json({ message: "Logged out" });
 };
 

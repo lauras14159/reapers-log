@@ -12,20 +12,19 @@ export const protect = async (
   next: NextFunction,
 ) => {
   try {
-    const token = req.cookies?.token;
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
+    const token = authHeader.split(" ")[1]; //  get token from "Bearer <token>"
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
       id: string;
     };
 
     const user = await User.findById(decoded.id).select("-password");
-    if (!user) {
-      return res.status(401).json({ message: "User not found" });
-    }
+    if (!user) return res.status(401).json({ message: "User not found" });
 
     req.userId = decoded.id;
     next();

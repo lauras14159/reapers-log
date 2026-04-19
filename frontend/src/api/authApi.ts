@@ -2,7 +2,13 @@ import axios from "axios";
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true, // sends cookies automatically
+});
+
+//  attach token to every request
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
 });
 
 export const signupApi = async (
@@ -11,16 +17,18 @@ export const signupApi = async (
   password: string,
 ) => {
   const res = await API.post("/api/auth/signup", { name, email, password });
+  localStorage.setItem("token", res.data.token); // save token
   return res.data;
 };
 
 export const loginApi = async (email: string, password: string) => {
   const res = await API.post("/api/auth/login", { email, password });
+  localStorage.setItem("token", res.data.token); //  save token
   return res.data;
 };
 
 export const logoutApi = async () => {
-  await API.post("/api/auth/logout");
+  localStorage.removeItem("token"); //  just remove token
 };
 
 export const getMeApi = async () => {

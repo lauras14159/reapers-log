@@ -8,11 +8,13 @@ const sendToken = (res: Response, userId: string) => {
     expiresIn: "7d",
   });
 
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.cookie("token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    secure: isProduction, // false locally, true in production
+    sameSite: isProduction ? "none" : "lax", // lax locally, none in production
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 

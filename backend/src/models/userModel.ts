@@ -18,10 +18,9 @@ const userSchema = new Schema<IUser>(
 );
 
 // Hash password before saving
-userSchema.pre<IUser>("save", async function (next: any) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+  this.password = await bcrypt.hash(this.password as string, 10);
 });
 
 // Compare password method

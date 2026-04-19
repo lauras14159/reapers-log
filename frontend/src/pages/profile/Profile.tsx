@@ -53,8 +53,6 @@ export default function Profile() {
 
     return (
         <div className="max-w-lg mx-auto p-6">
-            <h1 className="text-2xl font-bold mb-6">Profile</h1>
-
             {/* Avatar */}
             <div className="flex flex-col items-center mb-8">
                 <div className="w-24 h-24 rounded-full bg-blue-700 flex items-center justify-center text-white text-3xl font-bold">
@@ -96,8 +94,8 @@ export default function Profile() {
                     />
                 </div>
 
-                <hr className="my-4" />
-                <p className="text-sm text-gray-500">Leave blank to keep current password</p>
+
+                <p className="text-sm text-gray-500 pt-5">Leave blank to keep current password</p>
 
                 <div>
                     <label className="block font-medium mb-1 text-sm">Current Password</label>

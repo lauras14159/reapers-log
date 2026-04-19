@@ -87,6 +87,8 @@ export interface IPatient extends Document {
   }[];
 
   isArchived?: boolean;
+
+  userId?: mongoose.Types.ObjectId;
 }
 
 const patientSchema: Schema = new Schema(
@@ -219,6 +221,12 @@ const patientSchema: Schema = new Schema(
     ],
 
     isArchived: { type: Boolean, default: false },
+
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
   },
   { timestamps: true },
 );

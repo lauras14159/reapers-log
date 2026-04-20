@@ -51,8 +51,8 @@ export default function PatientFilters({
                         }
                         className="px-3 py-2 pr-10 w-full border rounded appearance-none"
                     >
-                        <option value="name">Sort A → Z</option>
-                        <option value="date">Sort by First Session</option>
+                        <option value="name" className="text-gray-900">Sort A → Z</option>
+                        <option value="date" className="text-gray-900">Sort by First Session</option>
                     </select>
 
                     {/* Arrow */}

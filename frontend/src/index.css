@@ -11,18 +11,9 @@
   text-decoration: none !important;
 }
 
-/* Mobile horizontal scroll */
-.fc {
-  min-width: 600px;
-}
-
-.fc-view-harness {
-  overflow-x: auto !important;
-}
-
 /* Calendar borders - light mode only */
-.fc-scrollgrid,
-.fc-scrollgrid td,
-.fc-scrollgrid th {
+:not(.dark) .fc-scrollgrid,
+:not(.dark) .fc-scrollgrid td,
+:not(.dark) .fc-scrollgrid th {
   border-color: #1e2939 !important;
 }

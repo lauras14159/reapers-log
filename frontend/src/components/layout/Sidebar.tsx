@@ -9,6 +9,7 @@ import {
     Archive,
     User,
     type LucideIcon,
+    CalendarRangeIcon,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -63,6 +64,13 @@ export default function Sidebar() {
                         to="/"
                         label="Dashboard"
                         icon={LayoutDashboard}
+                        collapsed={isCollapsed}
+                        onClick={() => setIsMobileOpen(false)}
+                    />
+                    <SidebarItem
+                        to="/schedule"
+                        label="Schedule"
+                        icon={CalendarRangeIcon}
                         collapsed={isCollapsed}
                         onClick={() => setIsMobileOpen(false)}
                     />

@@ -9,6 +9,7 @@ import { useAuthStore } from "../components/hooks/useAuthStore";
 import { useEffect } from "react";
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
+import Schedule from "../pages/schedule/Schedule";
 
 const AppRouter = () => {
     const { fetchMe } = useAuthStore();
@@ -34,6 +35,7 @@ const AppRouter = () => {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/patient/new" element={<PatientForm />} />
                 <Route path="/patient/:id" element={<PatientForm />} />
+                <Route path="/schedule" element={<Schedule />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

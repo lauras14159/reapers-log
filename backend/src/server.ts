@@ -46,9 +46,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/patients", protect, patientRoutes);
 app.use("/api/appointments", appointmentRoutes);
 
-// ✅ cron job - check reminders every 5 minutes
+// ron job - check reminders every 5 minutes
 cron.schedule("*/5 * * * *", () => {
-  console.log("Checking reminders...");
   sendReminders();
 });
 

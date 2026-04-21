@@ -5,8 +5,6 @@ import { AuthRequest } from "../middleware/authMiddleware";
 import User from "../models/userModel";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 // GET all appointments for user
 export const getAppointments = async (req: AuthRequest, res: Response) => {
   try {
@@ -116,6 +114,7 @@ export const markAsDone = async (req: AuthRequest, res: Response) => {
 // SEND REMINDERS (called by cron job)
 export const sendReminders = async () => {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const now = new Date();
     const upcoming = await Appointment.find({
       status: "upcoming",
@@ -147,8 +146,6 @@ export const sendReminders = async () => {
       appointment.reminderSent = true;
       await appointment.save();
     }
-
-    console.log(`Sent ${upcoming.length} reminders`);
   } catch (err) {
     console.error("Reminder error:", err);
   }

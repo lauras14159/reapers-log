@@ -16,7 +16,7 @@ export default function DayAppointments({ date, appointments, onEdit, onClose, o
     const handleMarkDone = async (id: string) => {
         if (!confirm("Mark as done? This will create the patient in your list.")) return;
         await markDone(id);
-        await fetchPatients(); // ✅ refresh patient list
+        await fetchPatients(); // refresh patient list
     };
 
     const handleCancel = async (appointment: Appointment) => {
@@ -57,10 +57,10 @@ export default function DayAppointments({ date, appointments, onEdit, onClose, o
                             <div className="flex justify-between items-start">
                                 <span
                                     className={`text-xs px-2 py-1 rounded-full font-medium ${a.status === "done"
-                                            ? "bg-green-100 text-green-700"
-                                            : a.status === "cancelled"
-                                                ? "bg-red-100 text-red-700"
-                                                : "bg-blue-100 text-blue-700"
+                                        ? "bg-green-100 text-green-700"
+                                        : a.status === "cancelled"
+                                            ? "bg-red-100 text-red-700"
+                                            : "bg-blue-100 text-blue-700"
                                         }`}
                                 >
                                     {a.status}

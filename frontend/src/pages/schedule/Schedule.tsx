@@ -13,6 +13,15 @@ export default function Schedule() {
     const [showModal, setShowModal] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
+    const handleEventClick = (info: any) => {
+        const clicked = appointments.find((a) => a._id === info.event.id);
+        if (clicked) {
+            setSelectedDate(clicked.date);
+            setEditingAppointment(clicked);
+            setShowModal(true);
+        }
+    };
+
     useEffect(() => {
         fetchAppointments();
     }, []);
@@ -61,19 +70,22 @@ export default function Schedule() {
 
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Calendar */}
-                <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm">
-                    <FullCalendar
-                        plugins={[dayGridPlugin, interactionPlugin]}
-                        initialView="dayGridMonth"
-                        events={events}
-                        dateClick={handleDateClick}
-                        headerToolbar={{
-                            left: "prev,next today",
-                            center: "title",
-                            right: "",
-                        }}
-                        height="auto"
-                    />
+                <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm overflow-x-auto">
+                    <div className="min-w-150">
+                        <FullCalendar
+                            plugins={[dayGridPlugin, interactionPlugin]}
+                            initialView="dayGridMonth"
+                            events={events}
+                            dateClick={handleDateClick}
+                            eventClick={handleEventClick}
+                            headerToolbar={{
+                                left: "prev,next today",
+                                center: "title",
+                                right: "",
+                            }}
+                            height="auto"
+                        />
+                    </div>
                 </div>
 
                 {/* Day Appointments Panel */}

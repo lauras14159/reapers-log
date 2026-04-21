@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { usePatientStore } from "../hooks/usePatients";
 import { Bin } from "../../svg/bin";
 import { AccordionSection } from "../Accordion/AccordionSection";
+import { exportPatientPDF } from "../../utils/exportPatientPDF";
 
 export default function PatientForm() {
     // Patient state
@@ -289,6 +290,24 @@ export default function PatientForm() {
         "Atypical behavior",
     ] as const;
 
+    const handleExportPDF = () => {
+        exportPatientPDF({
+            patient,
+            functionalField,
+            motorTesting,
+            respiratory,
+            treatmentPlan,
+            ptSchedule,
+            gaitTraining,
+            livingAids,
+            brace,
+            sittingPosition,
+            painScale,
+            algoPlus,
+            musculoskeletal,
+        });
+    };
+
     useEffect(() => {
         if (!id) return;
         if (patients.length === 0) {
@@ -470,7 +489,7 @@ export default function PatientForm() {
                     {/* Code */}
                     <div className="flex flex-col shrink-0 max-w-[40%]">
                         <label className="block font-medium mb-1 invisible">Code</label>
-                        <div className="p-5 dark:bg-gray-900 bg-gray-300 rounded truncate text-gray-800 dark:text-white">
+                        <div className="p-2 dark:bg-gray-900 bg-gray-300 rounded truncate text-gray-800 dark:text-white">
                             {patient.patientCode}
                         </div>
                     </div>
@@ -1658,7 +1677,8 @@ export default function PatientForm() {
                 </div>
             </AccordionSection>
 
-            <div className="md:justify-start justify-center flex">
+            <div className="md:justify-start justify-center flex gap-3">
+
                 <button
                     type="submit"
                     disabled={submitting}
@@ -1666,6 +1686,16 @@ export default function PatientForm() {
                 >
                     {submitting ? "Saving..." : isEdit ? "Save" : "Submit"}
                 </button>
+
+                {isEdit && (
+                    <button
+                        type="button"
+                        onClick={handleExportPDF}
+                        className="hover:bg-gray-700 text-white py-2 bg-[#1e2939] dark:bg-[#101828] rounded mt-4 duration-500 max-w-xs md:max-w-40 w-full"
+                    >
+                        Export PDF
+                    </button>
+                )}
             </div>
         </form>
     );

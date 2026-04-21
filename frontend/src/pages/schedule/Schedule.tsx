@@ -70,7 +70,7 @@ export default function Schedule() {
 
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Calendar */}
-                <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm">
+                <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm md:text-base text-sm">
                     <FullCalendar
                         plugins={[dayGridPlugin, interactionPlugin]}
                         initialView="dayGridMonth"

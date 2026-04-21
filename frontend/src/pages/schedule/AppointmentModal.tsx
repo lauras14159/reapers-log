@@ -75,7 +75,7 @@ export default function AppointmentModal({ defaultDate, appointment, onClose }: 
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 md:gap-4 gap-2">
                         <div>
                             <label className="block font-medium mb-1 text-sm">Date*</label>
                             <input

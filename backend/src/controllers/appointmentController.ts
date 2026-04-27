@@ -15,13 +15,15 @@ export const getAppointments = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// CREATE appointment
+// CREATE appointment — accept linkedPatientId
 export const createAppointment = async (req: AuthRequest, res: Response) => {
   try {
-    const { patientName, date, time, notes, reminderTime } = req.body;
+    const { patientName, date, time, notes, reminderTime, linkedPatientId } =
+      req.body;
 
     const appointment = await Appointment.create({
       userId: req.userId,
+      linkedPatientId: linkedPatientId || null, // ✅
       patientName,
       date,
       time,
@@ -30,6 +32,105 @@ export const createAppointment = async (req: AuthRequest, res: Response) => {
     });
 
     res.status(201).json(appointment);
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// MARK AS DONE — smart ptSchedule logic
+export const markAsDone = async (req: AuthRequest, res: Response) => {
+  try {
+    const appointment = await Appointment.findOne({
+      _id: req.params.id,
+      userId: req.userId,
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    appointment.status = "done";
+    appointment.patientCreated = true;
+    await appointment.save();
+
+    let patient;
+
+    // ── FOLLOW-UP: linked to existing patient ──────────────
+    if (appointment.linkedPatientId) {
+      patient = await Patient.findById(appointment.linkedPatientId);
+
+      if (patient) {
+        const ptSchedule = patient.ptSchedule || [];
+        const appointmentDate = new Date(appointment.date);
+
+        // check if appointment fits in an existing week (within 7 days)
+        let addedToExistingWeek = false;
+
+        for (const week of ptSchedule) {
+          if (!week.date) continue;
+          const weekDate = new Date(week.date);
+          const diffDays = Math.abs(
+            (appointmentDate.getTime() - weekDate.getTime()) /
+              (1000 * 60 * 60 * 24),
+          );
+
+          if (diffDays <= 7) {
+            // ✅ same week — add new session
+            week.sessions.push({
+              sessionNumber: week.sessions.length + 1,
+              note: "",
+            });
+            addedToExistingWeek = true;
+            break;
+          }
+        }
+
+        if (!addedToExistingWeek) {
+          // ✅ different week — add new week
+          ptSchedule.push({
+            weekNumber: ptSchedule.length + 1,
+            date: appointment.date,
+            sessions: [{ sessionNumber: 1, note: "" }],
+          });
+        }
+
+        patient.ptSchedule = ptSchedule;
+        await patient.save();
+      }
+    }
+
+    // ── NEW PATIENT ─────────────────────────────────────────
+    else {
+      const lastPatient = await Patient.findOne({ userId: req.userId })
+        .sort({ _id: -1 })
+        .select("patientCode");
+
+      let nextNumber = 1;
+      if (lastPatient?.patientCode) {
+        const match = lastPatient.patientCode.match(/\d+/);
+        if (match) nextNumber = parseInt(match[0], 10) + 1;
+      }
+
+      const patientCode = `P-${String(nextNumber).padStart(3, "0")}`;
+
+      patient = await Patient.create({
+        userId: req.userId,
+        fullName: appointment.patientName,
+        firstSessionDate: appointment.date,
+        time: appointment.time,
+        patientCode,
+        // ✅ prefill week 1 with the appointment date
+        ptSchedule: [
+          {
+            weekNumber: 1,
+            date: appointment.date,
+            sessions: [{ sessionNumber: 1, note: "" }],
+          },
+        ],
+      });
+    }
+
+    res.json({ appointment, patient });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
@@ -67,48 +168,6 @@ export const deleteAppointment = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// MARK AS DONE + auto-create patient
-export const markAsDone = async (req: AuthRequest, res: Response) => {
-  try {
-    const appointment = await Appointment.findOne({
-      _id: req.params.id,
-      userId: req.userId,
-    });
-
-    if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found" });
-    }
-
-    appointment.status = "done";
-    appointment.patientCreated = true;
-    await appointment.save();
-
-    const lastPatient = await Patient.findOne({ userId: req.userId })
-      .sort({ _id: -1 })
-      .select("patientCode");
-
-    let nextNumber = 1;
-    if (lastPatient?.patientCode) {
-      const match = lastPatient.patientCode.match(/\d+/);
-      if (match) nextNumber = parseInt(match[0], 10) + 1;
-    }
-
-    const patientCode = `P-${String(nextNumber).padStart(3, "0")}`;
-
-    const patient = await Patient.create({
-      userId: req.userId,
-      fullName: appointment.patientName,
-      firstSessionDate: appointment.date,
-      time: appointment.time,
-      patientCode,
-    });
-
-    res.json({ appointment, patient });
-  } catch (err: any) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
 // SEND REMINDERS — called by cron job every 5 minutes
 export const sendReminders = async () => {
   try {
@@ -116,15 +175,12 @@ export const sendReminders = async () => {
 
     // compare in UTC — frontend saves reminderTime as UTC
     const nowUTC = new Date().toISOString().slice(0, 16);
-    console.log("⏰ Checking reminders at UTC:", nowUTC);
 
     const upcoming = await Appointment.find({
       status: "upcoming",
       reminderSent: false,
       reminderTime: { $lte: nowUTC },
     });
-
-    console.log(`📋 Appointments to remind: ${upcoming.length}`);
 
     for (const appointment of upcoming) {
       try {

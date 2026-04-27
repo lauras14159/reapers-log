@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IAppointment extends Document {
   userId: mongoose.Types.ObjectId;
+  linkedPatientId?: mongoose.Types.ObjectId; // for follow-up appointments
   patientName: string;
   date: string;
   time: string;
@@ -19,6 +20,11 @@ const appointmentSchema = new Schema<IAppointment>(
       ref: "User",
       required: true,
     },
+    linkedPatientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Patient",
+      default: null,
+    },
     patientName: { type: String, required: true },
     date: { type: String, required: true },
     time: { type: String, required: true },
@@ -28,7 +34,7 @@ const appointmentSchema = new Schema<IAppointment>(
       enum: ["upcoming", "done", "cancelled"],
       default: "upcoming",
     },
-    reminderTime: { type: String }, // e.g. "2026-04-20T08:00"
+    reminderTime: { type: String },
     reminderSent: { type: Boolean, default: false },
     patientCreated: { type: Boolean, default: false },
   },

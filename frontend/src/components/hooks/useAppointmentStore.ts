@@ -9,6 +9,7 @@ import {
 
 export type Appointment = {
   _id: string;
+  linkedPatientId?: string;
   patientName: string;
   date: string;
   time: string;

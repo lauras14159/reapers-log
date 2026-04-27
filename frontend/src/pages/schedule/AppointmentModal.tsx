@@ -3,8 +3,20 @@ import { useAppointmentStore, type Appointment } from "../../components/hooks/us
 
 type Props = {
     defaultDate: string;
-    appointment: Appointment | null; // null = create, not null = edit
+    appointment: Appointment | null;
     onClose: () => void;
+};
+
+// ✅ convert UTC stored value back to local time for display
+const toLocalDatetime = (utcString: string) => {
+    if (!utcString) return "";
+    const date = new Date(utcString + "Z");
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
 export default function AppointmentModal({ defaultDate, appointment, onClose }: Props) {
@@ -15,7 +27,10 @@ export default function AppointmentModal({ defaultDate, appointment, onClose }: 
     const [date, setDate] = useState(appointment?.date || defaultDate);
     const [time, setTime] = useState(appointment?.time || "");
     const [notes, setNotes] = useState(appointment?.notes || "");
-    const [reminderTime, setReminderTime] = useState(appointment?.reminderTime || "");
+    // convert UTC to local when editing
+    const [reminderTime, setReminderTime] = useState(
+        appointment?.reminderTime ? toLocalDatetime(appointment.reminderTime) : ""
+    );
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -25,14 +40,18 @@ export default function AppointmentModal({ defaultDate, appointment, onClose }: 
         setLoading(true);
 
         try {
-            const data = { patientName, date, time, notes, reminderTime };
+            // ✅ convert local time back to UTC before saving
+            const reminderUTC = reminderTime
+                ? new Date(reminderTime).toISOString().slice(0, 16)
+                : "";
+
+            const data = { patientName, date, time, notes, reminderTime: reminderUTC };
 
             if (isEdit) {
                 await editAppointment(appointment._id, data);
             } else {
                 await addAppointment(data);
             }
-
             onClose();
         } catch (err: any) {
             setError("Failed to save appointment");

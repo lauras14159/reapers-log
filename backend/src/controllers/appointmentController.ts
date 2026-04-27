@@ -35,7 +35,7 @@ export const createAppointment = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// UPDATE appointment (edit or change status)
+// UPDATE appointment
 export const updateAppointment = async (req: AuthRequest, res: Response) => {
   try {
     const appointment = await Appointment.findOneAndUpdate(
@@ -67,7 +67,7 @@ export const deleteAppointment = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// MARK AS DONE + create patient
+// MARK AS DONE + auto-create patient
 export const markAsDone = async (req: AuthRequest, res: Response) => {
   try {
     const appointment = await Appointment.findOne({
@@ -79,12 +79,10 @@ export const markAsDone = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    // Update status
     appointment.status = "done";
     appointment.patientCreated = true;
     await appointment.save();
 
-    // Auto-create patient
     const lastPatient = await Patient.findOne({ userId: req.userId })
       .sort({ _id: -1 })
       .select("patientCode");
@@ -111,46 +109,60 @@ export const markAsDone = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// SEND REMINDERS (called by cron job)
+// SEND REMINDERS — called by cron job every 5 minutes
 export const sendReminders = async () => {
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    console.log(
-      "RESEND KEY:",
-      process.env.RESEND_API_KEY ? "✅ found" : "❌ missing",
-    );
-    const now = new Date();
+
+    // compare in UTC — frontend saves reminderTime as UTC
+    const nowUTC = new Date().toISOString().slice(0, 16);
+    console.log("⏰ Checking reminders at UTC:", nowUTC);
+
     const upcoming = await Appointment.find({
       status: "upcoming",
       reminderSent: false,
-      reminderTime: { $lte: now.toISOString() },
+      reminderTime: { $lte: nowUTC },
     });
 
+    console.log(`📋 Appointments to remind: ${upcoming.length}`);
+
     for (const appointment of upcoming) {
-      const user = await User.findById(appointment.userId);
-      if (!user?.email) continue;
+      try {
+        const user = await User.findById(appointment.userId);
 
-      await resend.emails.send({
-        from: "Physio App <onboarding@resend.dev>",
-        to: user.email,
-        subject: `🏥 Reminder: Appointment with ${appointment.patientName}`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto;">
-            <h2>Appointment Reminder 📅</h2>
-            <p><strong>Patient:</strong> ${appointment.patientName}</p>
-            <p><strong>Date:</strong> ${appointment.date}</p>
-            <p><strong>Time:</strong> ${appointment.time}</p>
-            ${appointment.notes ? `<p><strong>Notes:</strong> ${appointment.notes}</p>` : ""}
-            <hr />
-            <p style="color: gray; font-size: 12px;">Sent by your Physio App</p>
-          </div>
-        `,
-      });
+        if (!user?.email) {
+          console.log("❌ No email for userId:", appointment.userId);
+          continue;
+        }
 
-      appointment.reminderSent = true;
-      await appointment.save();
+        console.log(`📧 Sending reminder to: ${user.email}`);
+
+        await resend.emails.send({
+          from: "Physio App <onboarding@resend.dev>",
+          to: user.email,
+          subject: `🏥 Reminder: Appointment with ${appointment.patientName}`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #1e2939;">Appointment Reminder 📅</h2>
+              <hr/>
+              <p><strong>Patient:</strong> ${appointment.patientName}</p>
+              <p><strong>Date:</strong> ${appointment.date}</p>
+              <p><strong>Time:</strong> ${appointment.time}</p>
+              ${appointment.notes ? `<p><strong>Notes:</strong> ${appointment.notes}</p>` : ""}
+              <hr/>
+              <p style="color: gray; font-size: 12px;">Sent by your Physio App</p>
+            </div>
+          `,
+        });
+
+        console.log(`✅ Email sent to: ${user.email}`);
+        appointment.reminderSent = true;
+        await appointment.save();
+      } catch (emailErr) {
+        console.error("❌ Resend error:", emailErr);
+      }
     }
   } catch (err) {
-    console.error("Reminder error:", err);
+    console.error("❌ sendReminders error:", err);
   }
 };

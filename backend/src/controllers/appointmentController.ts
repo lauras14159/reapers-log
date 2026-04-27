@@ -115,6 +115,10 @@ export const markAsDone = async (req: AuthRequest, res: Response) => {
 export const sendReminders = async () => {
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
+    console.log(
+      "RESEND KEY:",
+      process.env.RESEND_API_KEY ? "✅ found" : "❌ missing",
+    );
     const now = new Date();
     const upcoming = await Appointment.find({
       status: "upcoming",

@@ -21,7 +21,7 @@ const toLocalDatetime = (utcString: string) => {
 
 export default function AppointmentModal({ defaultDate, appointment, onClose }: Props) {
     const { addAppointment, editAppointment } = useAppointmentStore();
-    const { patients } = usePatientStore(); // ✅ get patients list
+    const { patients } = usePatientStore(); //  get patients list
     const isEdit = !!appointment;
 
     const [patientName, setPatientName] = useState(appointment?.patientName || "");
@@ -37,7 +37,7 @@ export default function AppointmentModal({ defaultDate, appointment, onClose }: 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // ✅ when picking existing patient, autofill the name
+    //  when picking existing patient, autofill the name
     const handlePatientSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = e.target.value;
         setLinkedPatientId(selectedId);
@@ -65,7 +65,7 @@ export default function AppointmentModal({ defaultDate, appointment, onClose }: 
                 time,
                 notes,
                 reminderTime: reminderUTC,
-                linkedPatientId: linkedPatientId || null, // ✅
+                linkedPatientId: linkedPatientId || null, // 
             };
 
             if (isEdit) {
@@ -97,7 +97,7 @@ export default function AppointmentModal({ defaultDate, appointment, onClose }: 
 
                 <form onSubmit={handleSubmit} className="space-y-4">
 
-                    {/* ✅ Link to existing patient (optional) */}
+                    {/*  Link to existing patient (optional) */}
                     <div>
                         <label className="block font-medium mb-1 text-sm">
                             Link to existing patient <span className="text-gray-400">(optional — for follow-up)</span>

@@ -16,7 +16,8 @@ export const exportPatientPDF = (data: {
   algoPlus: any;
   musculoskeletal: any;
 }) => {
-  const doc = new jsPDF();
+  //  landscape to fit wide tables (motor testing)
+  const doc = new jsPDF({ orientation: "landscape" });
   const {
     patient,
     functionalField,
@@ -34,11 +35,12 @@ export const exportPatientPDF = (data: {
   } = data;
 
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 14;
   let y = 20;
 
   const checkPage = (needed = 10) => {
-    if (y + needed > 275) {
+    if (y + needed > pageHeight - 15) {
       doc.addPage();
       y = 20;
     }
@@ -63,10 +65,8 @@ export const exportPatientPDF = (data: {
     doc.setFont("helvetica", "bold");
     doc.text(`${label}:`, margin, y);
     doc.setFont("helvetica", "normal");
-    const lines = doc.splitTextToSize(
-      String(value || "—"),
-      pageWidth - margin * 2 - 45,
-    );
+    const display = value === 0 ? "0" : String(value || "-");
+    const lines = doc.splitTextToSize(display, pageWidth - margin * 2 - 45);
     doc.text(lines, margin + 45, y);
     y += lines.length * 5 + 2;
   };
@@ -80,46 +80,30 @@ export const exportPatientPDF = (data: {
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.text(`${label}:`, margin, y);
-    y += 5;
     doc.setFont("helvetica", "normal");
-    let x = margin + 4;
-    options.forEach((opt) => {
-      const checked = selected?.includes(opt);
-      doc.text(checked ? "☑" : "☐", x, y);
-      doc.text(opt, x + 6, y);
-      x += doc.getTextWidth(opt) + 14;
-      if (x > pageWidth - margin - 20) {
-        x = margin + 4;
-        y += 5;
-      }
-    });
-    y += 7;
+    const selectedItems = options.filter((opt) => selected?.includes(opt));
+    const text = selectedItems.length > 0 ? selectedItems.join(", ") : "-";
+    const lines = doc.splitTextToSize(text, pageWidth - margin * 2 - 45);
+    doc.text(lines, margin + 45, y);
+    y += lines.length * 5 + 2;
   };
 
-  const radioField = (
-    label: string,
-    options: string[],
-    selected: string | null,
-  ) => {
+  const radioField = (label: string, selected: string | null) => {
     checkPage(8);
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.text(`${label}:`, margin, y);
-    y += 5;
     doc.setFont("helvetica", "normal");
-    let x = margin + 4;
-    options.forEach((opt) => {
-      const isSelected = selected === opt;
-      doc.text(isSelected ? "●" : "○", x, y);
-      doc.text(opt, x + 6, y);
-      x += doc.getTextWidth(opt) + 14;
-      if (x > pageWidth - margin - 20) {
-        x = margin + 4;
-        y += 5;
-      }
-    });
-    y += 7;
+    const lines = doc.splitTextToSize(
+      selected || "-",
+      pageWidth - margin * 2 - 45,
+    );
+    doc.text(lines, margin + 45, y);
+    y += lines.length * 5 + 2;
   };
+
+  const val = (v: any) =>
+    v !== undefined && v !== null && v !== "" ? String(v) : "-";
 
   // ── HEADER ──────────────────────────────────────
   doc.setFillColor(30, 41, 57);
@@ -170,6 +154,32 @@ export const exportPatientPDF = (data: {
   field("Precautions", patient.precautions);
   field("History", patient.history);
 
+  // ── PT SESSIONS ──────────────────────────────────
+  sectionHeader("PT Sessions");
+  (ptSchedule || []).forEach((week: any) => {
+    checkPage(12);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(
+      `Week ${week.weekNumber}${week.date ? ` — ${week.date}` : ""}`,
+      margin,
+      y,
+    );
+    y += 6;
+    autoTable(doc, {
+      startY: y,
+      head: [["Session", "Notes"]],
+      body: (week.sessions || []).map((s: any, i: number) => [
+        `Session ${i + 1}`,
+        val(s.note),
+      ]),
+      headStyles: { fillColor: [71, 85, 105] },
+      styles: { fontSize: 9 },
+      margin: { left: margin, right: margin },
+    });
+    y = (doc as any).lastAutoTable.finalY + 6;
+  });
+
   // ── MUSCULOSKELETAL ─────────────────────────────
   sectionHeader("Musculoskeletal Evaluation");
   checkboxField(
@@ -177,23 +187,18 @@ export const exportPatientPDF = (data: {
     ["Right", "Left"],
     musculoskeletal.rangeOfMotion || [],
   );
-
   autoTable(doc, {
     startY: y,
     head: [["Region", "Joint", "Value"]],
     body: [
-      [
-        "Upper Limbs",
-        "Shoulder",
-        musculoskeletal.upperLimbsROM?.shoulder || "—",
-      ],
-      ["Upper Limbs", "Elbow", musculoskeletal.upperLimbsROM?.elbow || "—"],
-      ["Upper Limbs", "Wrist", musculoskeletal.upperLimbsROM?.wrist || "—"],
-      ["Lower Limbs", "Hip", musculoskeletal.lowerLimbsROM?.hip || "—"],
-      ["Lower Limbs", "Knee", musculoskeletal.lowerLimbsROM?.knee || "—"],
-      ["Lower Limbs", "Ankle", musculoskeletal.lowerLimbsROM?.ankle || "—"],
-      ["Spine", "Cervical", musculoskeletal.spineROM?.cervical || "—"],
-      ["Spine", "Lumbar", musculoskeletal.spineROM?.lumbar || "—"],
+      ["Upper Limbs", "Shoulder", val(musculoskeletal.upperLimbsROM?.shoulder)],
+      ["Upper Limbs", "Elbow", val(musculoskeletal.upperLimbsROM?.elbow)],
+      ["Upper Limbs", "Wrist", val(musculoskeletal.upperLimbsROM?.wrist)],
+      ["Lower Limbs", "Hip", val(musculoskeletal.lowerLimbsROM?.hip)],
+      ["Lower Limbs", "Knee", val(musculoskeletal.lowerLimbsROM?.knee)],
+      ["Lower Limbs", "Ankle", val(musculoskeletal.lowerLimbsROM?.ankle)],
+      ["Spine", "Cervical", val(musculoskeletal.spineROM?.cervical)],
+      ["Spine", "Lumbar", val(musculoskeletal.spineROM?.lumbar)],
     ],
     headStyles: { fillColor: [30, 41, 57] },
     styles: { fontSize: 9 },
@@ -221,22 +226,38 @@ export const exportPatientPDF = (data: {
     { key: "walking10Meters", label: "Walking 10 Meters" },
   ];
 
-  const funcDates = functionalField.dateFunctionalField || ["", "", "", "", ""];
+  const funcDates = (
+    functionalField.dateFunctionalField || ["", "", "", "", ""]
+  ).map((d: string) => d || "-");
 
+  //  force all 5 columns to show even if empty
   autoTable(doc, {
     startY: y,
-    head: [["Activity", ...funcDates.map((d: string) => d || "—")]],
+    head: [["Activity", ...funcDates]],
     body: [
-      ...funcRows.map(({ key, label }) => [
-        label,
-        ...(functionalField[key] || [0, 0, 0, 0, 0]).map(
-          (v: number) => v ?? "",
+      ...funcRows.map(({ key, label }) => {
+        const row = functionalField[key] || [0, 0, 0, 0, 0];
+        //  ensure exactly 5 values
+        const values = Array.from({ length: 5 }, (_, i) => val(row[i]));
+        return [label, ...values];
+      }),
+      [
+        "Total",
+        ...Array.from({ length: 5 }, (_, i) =>
+          val((functionalField.total || [])[i]),
         ),
-      ]),
-      ["Total", ...(functionalField.total || ["", "", "", "", ""])],
+      ],
     ],
-    headStyles: { fillColor: [30, 41, 57] },
-    styles: { fontSize: 9 },
+    headStyles: { fillColor: [30, 41, 57], halign: "center" },
+    styles: { fontSize: 9, halign: "center" },
+    columnStyles: {
+      0: { halign: "left", cellWidth: 45 },
+      1: { cellWidth: 28 },
+      2: { cellWidth: 28 },
+      3: { cellWidth: 28 },
+      4: { cellWidth: 28 },
+      5: { cellWidth: 28 },
+    },
     margin: { left: margin, right: margin },
   });
   y = (doc as any).lastAutoTable.finalY + 8;
@@ -266,102 +287,104 @@ export const exportPatientPDF = (data: {
     livingAids || [],
   );
   if (livingAids?.includes("Brace")) field("Brace", brace?.braceField);
-
-  // Pain Scale
-  checkPage(10);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.text("Pain Scale (Numeric):", margin, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(`${painScale.painScaleRate ?? 0} / 10`, margin + 50, y);
-  y += 7;
-
-  // Algo+ Scale
-  radioField(
-    "Algo+ Scale",
-    [
-      "Facial expressions",
-      "Look",
-      "Complaints",
-      "Body position",
-      "Atypical behavior",
-    ],
-    algoPlus.algoPlusScale,
-  );
-  field("Algo+ Score", `${algoPlus.algoPlusScore ?? 0} / 5`);
-
-  // ── RESPIRATORY TEST ────────────────────────────
-  sectionHeader("Respiratory Test");
-
-  autoTable(doc, {
-    startY: y,
-    head: [["Category", "Selected"]],
-    body: [
-      [
-        "Breathing Type",
-        (respiratory.breathType || [])
-          .map((v: string) => `☑ ${v}`)
-          .join("  ") || "—",
-      ],
-      [
-        "Auscultation",
-        (respiratory.auscultation || [])
-          .map((v: string) => `☑ ${v}`)
-          .join("  ") || "—",
-      ],
-      [
-        "Cough",
-        (respiratory.cough || []).map((v: string) => `☑ ${v}`).join("  ") ||
-          "—",
-      ],
-      [
-        "Secretion",
-        (respiratory.secretion || []).map((v: string) => `☑ ${v}`).join("  ") ||
-          "—",
-      ],
-      [
-        "Secretion Color",
-        (respiratory.secretionColor || [])
-          .map((v: string) => `☑ ${v}`)
-          .join("  ") || "—",
-      ],
-    ],
-    headStyles: { fillColor: [30, 41, 57] },
-    styles: { fontSize: 9 },
-    margin: { left: margin, right: margin },
-  });
-  y = (doc as any).lastAutoTable.finalY + 8;
+  field("Pain Scale (Numeric)", `${painScale.painScaleRate ?? 0} / 10`);
+  radioField("Algo Plus Scale", algoPlus.algoPlusScale);
+  field("Algo Plus Score", `${algoPlus.algoPlusScore ?? 0} / 5`);
 
   // ── MOTOR TESTING ───────────────────────────────
   sectionHeader("Motor Testing");
 
-  const rightDates = motorTesting.rightDates || ["", "", "", "", ""];
-  const leftDates = motorTesting.leftDates || ["", "", "", "", ""];
+  const rightDates = Array.from({ length: 5 }, (_, i) =>
+    val((motorTesting.rightDates || [])[i]),
+  );
+  const leftDates = Array.from({ length: 5 }, (_, i) =>
+    val((motorTesting.leftDates || [])[i]),
+  );
 
+  //  full table — all 15 rows, all 11 columns
   autoTable(doc, {
     startY: y,
     head: [
       [
-        "Muscle",
-        ...rightDates.map((d: string) => (d ? `R\n${d}` : "R")),
-        ...leftDates.map((d: string) => (d ? `L\n${d}` : "L")),
+        { content: "", styles: { fillColor: [30, 41, 57] } },
+        {
+          content: "Right",
+          colSpan: 5,
+          styles: { halign: "center", fillColor: [30, 41, 57] },
+        },
+        {
+          content: "Left",
+          colSpan: 5,
+          styles: { halign: "center", fillColor: [30, 41, 57] },
+        },
+      ],
+      [
+        {
+          content: "Muscle",
+          styles: { fillColor: [30, 41, 57], textColor: 255 },
+        },
+        ...rightDates.map((d) => ({
+          content: d,
+          styles: {
+            fillColor: [30, 41, 57],
+            textColor: 255,
+            fontSize: 7,
+          } as any,
+        })),
+        ...leftDates.map((d) => ({
+          content: d,
+          styles: {
+            fillColor: [30, 41, 57],
+            textColor: 255,
+            fontSize: 7,
+          } as any,
+        })),
       ],
     ],
     body: (motorTesting.rows || []).map((row: any) => [
       row.name,
-      ...(row.right || []),
-      ...(row.left || []),
+      ...Array.from({ length: 5 }, (_, i) => val((row.right || [])[i])),
+      ...Array.from({ length: 5 }, (_, i) => val((row.left || [])[i])),
     ]),
-    headStyles: { fillColor: [30, 41, 57], fontSize: 7 },
-    styles: { fontSize: 8 },
-    columnStyles: { 0: { cellWidth: 40 } },
+    styles: { fontSize: 7, halign: "center" },
+    columnStyles: {
+      0: { halign: "left", cellWidth: 42, fontStyle: "bold" },
+      1: { cellWidth: 18 },
+      2: { cellWidth: 18 },
+      3: { cellWidth: 18 },
+      4: { cellWidth: 18 },
+      5: { cellWidth: 18 },
+      //  thick separator before left
+      6: {
+        cellWidth: 18,
+        lineColor: [30, 41, 57] as any,
+        lineWidth: { left: 1.5 } as any,
+      },
+      7: { cellWidth: 18 },
+      8: { cellWidth: 18 },
+      9: { cellWidth: 18 },
+      10: { cellWidth: 18 },
+    },
+    didDrawCell: (data: any) => {
+      if (data.column.index === 6) {
+        doc.setDrawColor(30, 41, 57);
+        doc.setLineWidth(1);
+        doc.line(
+          data.cell.x,
+          data.cell.y,
+          data.cell.x,
+          data.cell.y + data.cell.height,
+        );
+        doc.setLineWidth(0.1);
+        doc.setDrawColor(0);
+      }
+    },
     margin: { left: margin, right: margin },
   });
   y = (doc as any).lastAutoTable.finalY + 8;
 
   // ── TREATMENT PLAN ──────────────────────────────
   sectionHeader("Treatment Plan");
-
   autoTable(doc, {
     startY: y,
     head: [
@@ -369,43 +392,34 @@ export const exportPatientPDF = (data: {
     ],
     body: (treatmentPlan.assessmentFindings || []).map((_: any, i: number) => [
       i + 1,
-      treatmentPlan.assessmentFindings[i] || "—",
-      treatmentPlan.goals[i] || "—",
-      treatmentPlan.prioritization[i] || "—",
+      val(treatmentPlan.assessmentFindings[i]),
+      val(treatmentPlan.goals[i]),
+      val(treatmentPlan.prioritization[i]),
     ]),
+    headStyles: { fillColor: [30, 41, 57] },
+    styles: { fontSize: 9 },
+    columnStyles: { 0: { cellWidth: 10, halign: "center" } },
+    margin: { left: margin, right: margin },
+  });
+  y = (doc as any).lastAutoTable.finalY + 8;
+
+  // ── RESPIRATORY TEST ────────────────────────────
+  sectionHeader("Respiratory Test");
+  autoTable(doc, {
+    startY: y,
+    head: [["Category", "Selected"]],
+    body: [
+      ["Breathing Type", (respiratory.breathType || []).join(", ") || "-"],
+      ["Auscultation", (respiratory.auscultation || []).join(", ") || "-"],
+      ["Cough", (respiratory.cough || []).join(", ") || "-"],
+      ["Secretion", (respiratory.secretion || []).join(", ") || "-"],
+      ["Secretion Color", (respiratory.secretionColor || []).join(", ") || "-"],
+    ],
     headStyles: { fillColor: [30, 41, 57] },
     styles: { fontSize: 9 },
     margin: { left: margin, right: margin },
   });
   y = (doc as any).lastAutoTable.finalY + 8;
-
-  // ── PT SESSIONS ─────────────────────────────────
-  sectionHeader("PT Sessions");
-
-  (ptSchedule || []).forEach((week: any) => {
-    checkPage(12);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text(
-      `Week ${week.weekNumber}${week.date ? ` — ${week.date}` : ""}`,
-      margin,
-      y,
-    );
-    y += 6;
-
-    autoTable(doc, {
-      startY: y,
-      head: [["Session", "Notes"]],
-      body: (week.sessions || []).map((s: any, i: number) => [
-        `Session ${i + 1}`,
-        s.note || "—",
-      ]),
-      headStyles: { fillColor: [71, 85, 105] },
-      styles: { fontSize: 9 },
-      margin: { left: margin, right: margin },
-    });
-    y = (doc as any).lastAutoTable.finalY + 6;
-  });
 
   // ── PAGE NUMBERS ─────────────────────────────────
   const pageCount = doc.getNumberOfPages();
@@ -413,7 +427,7 @@ export const exportPatientPDF = (data: {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, 290, {
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 5, {
       align: "center",
     });
     doc.setTextColor(0, 0, 0);

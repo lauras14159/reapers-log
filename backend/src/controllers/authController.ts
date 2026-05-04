@@ -7,7 +7,7 @@ const sendToken = (res: Response, userId: string) => {
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET as string, {
     expiresIn: "7d",
   });
-  return token; // ✅ just return it
+  return token; //  just return it
 };
 
 // In signup:
@@ -22,7 +22,7 @@ export const signup = async (req: Request, res: Response) => {
     const token = sendToken(res, user._id.toString());
 
     res.status(201).json({
-      token, // ✅ send token in body
+      token, //  send token in body
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -44,7 +44,7 @@ export const login = async (req: Request, res: Response) => {
     const token = sendToken(res, user._id.toString());
 
     res.json({
-      token, // ✅ send token in body
+      token, //  send token in body
       _id: user._id,
       name: user.name,
       email: user.email,

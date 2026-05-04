@@ -376,17 +376,26 @@ export default function PatientForm() {
         );
 
         setMotorTesting({
-            rightDates: existingPatient.motorTesting?.rightDates || ["", "", "", "", ""],
-            leftDates: existingPatient.motorTesting?.leftDates || ["", "", "", "", ""],
-            rows: existingPatient.motorTesting?.rows || motorRowsTemplate,
+            rightDates: (existingPatient.motorTesting?.rightDates?.length ?? 0) > 0
+                ? existingPatient.motorTesting!.rightDates
+                : ["", "", "", "", ""],
+            leftDates: (existingPatient.motorTesting?.leftDates?.length ?? 0) > 0
+                ? existingPatient.motorTesting!.leftDates
+                : ["", "", "", "", ""],
+            rows: (existingPatient.motorTesting?.rows ?? []).length > 0
+                ? existingPatient.motorTesting!.rows
+                : motorRowsTemplate,
         });
 
+        const tp = existingPatient.treatmentPlan;
         setTreatmentPlan(
-            existingPatient.treatmentPlan || {
-                assessmentFindings: ["", "", "", "", ""],
-                goals: ["", "", "", "", ""],
-                prioritization: ["", "", "", "", ""],
-            }
+            tp && tp.assessmentFindings?.length > 0
+                ? tp
+                : {
+                    assessmentFindings: ["", "", "", "", ""],
+                    goals: ["", "", "", "", ""],
+                    prioritization: ["", "", "", "", ""],
+                }
         );
     }, [id, patients]);
 
@@ -1397,7 +1406,7 @@ export default function PatientForm() {
                                 <tr>
                                     <th className="border p-2 w-28 md:w-44"></th>
                                     <th className="border p-2" colSpan={5}>Right</th>
-                                    <th className="border p-2 border-l-4 border-l-black dark:border-l-white" colSpan={5}>Left</th>
+                                    <th className="border p-2 border-l-4 border-l-[#1e2939] dark:border-l-white" colSpan={5}>Left</th>
                                 </tr>
 
                                 <tr>
@@ -1424,8 +1433,7 @@ export default function PatientForm() {
                                     {motorTesting.leftDates.map((date, i) => (
                                         <th
                                             key={"l" + i}
-                                            className={`border p-2 align-middle ${i === 0 ? "border-l-4 border-l-black dark:border-l-white" : ""
-                                                }`}
+                                            className={`border p-2 align-middle ${i === 0 ? "border-l-4 border-l-[#1e2939] dark:border-l-white" : ""}`}
                                         >
                                             <input
                                                 type="date"
@@ -1484,9 +1492,7 @@ export default function PatientForm() {
                                         {row.left.map((val, colIndex) => (
                                             <td
                                                 key={"l" + colIndex}
-                                                className={`border p-2 align-middle ${colIndex === 0 ? "border-l-4 border-l-black dark:border-l-white" : ""
-                                                    }`}
-                                            >
+                                                className={`border p-2 align-middle ${colIndex === 0 ? "border-l-4 border-l-[#1e2939] dark:border-l-white" : ""}`} >
                                                 <div className="flex justify-center">
                                                     <input
                                                         type="text"

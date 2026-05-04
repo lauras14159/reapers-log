@@ -23,7 +23,7 @@ export const createAppointment = async (req: AuthRequest, res: Response) => {
 
     const appointment = await Appointment.create({
       userId: req.userId,
-      linkedPatientId: linkedPatientId || null, // ✅
+      linkedPatientId: linkedPatientId || null, //
       patientName,
       date,
       time,
@@ -75,7 +75,7 @@ export const markAsDone = async (req: AuthRequest, res: Response) => {
           );
 
           if (diffDays <= 7) {
-            // ✅ same week — add new session
+            //  same week — add new session
             week.sessions.push({
               sessionNumber: week.sessions.length + 1,
               note: "",
@@ -86,7 +86,7 @@ export const markAsDone = async (req: AuthRequest, res: Response) => {
         }
 
         if (!addedToExistingWeek) {
-          // ✅ different week — add new week
+          //  different week — add new week
           ptSchedule.push({
             weekNumber: ptSchedule.length + 1,
             date: appointment.date,
@@ -119,7 +119,7 @@ export const markAsDone = async (req: AuthRequest, res: Response) => {
         firstSessionDate: appointment.date,
         time: appointment.time,
         patientCode,
-        // ✅ prefill week 1 with the appointment date
+        //  prefill week 1 with the appointment date
         ptSchedule: [
           {
             weekNumber: 1,
@@ -211,7 +211,7 @@ export const sendReminders = async () => {
           `,
         });
 
-        console.log(`✅ Email sent to: ${user.email}`);
+        console.log(` Email sent to: ${user.email}`);
         appointment.reminderSent = true;
         await appointment.save();
       } catch (emailErr) {

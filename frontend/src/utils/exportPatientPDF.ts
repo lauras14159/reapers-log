@@ -16,7 +16,6 @@ export const exportPatientPDF = (data: {
   algoPlus: any;
   musculoskeletal: any;
 }) => {
-  //  landscape to fit wide tables (motor testing)
   const doc = new jsPDF({ orientation: "landscape" });
   const {
     patient,
@@ -104,6 +103,9 @@ export const exportPatientPDF = (data: {
 
   const val = (v: any) =>
     v !== undefined && v !== null && v !== "" ? String(v) : "-";
+
+  const fiveVals = (arr: any[]) =>
+    Array.from({ length: 5 }, (_, i) => val((arr || [])[i]));
 
   // ── HEADER ──────────────────────────────────────
   doc.setFillColor(30, 41, 57);
@@ -216,38 +218,23 @@ export const exportPatientPDF = (data: {
   );
   y += 6;
 
-  const funcRows = [
-    { key: "sitting", label: "Sitting" },
-    { key: "standing", label: "Standing" },
-    { key: "usingLivingAid", label: "Using Living Aid" },
-    { key: "goingToRestroom", label: "Going to Restroom" },
-    { key: "stairs", label: "Stairs" },
-    { key: "puttingShoesOrSocks", label: "Putting Shoes/Socks" },
-    { key: "walking10Meters", label: "Walking 10 Meters" },
+  //access each key directly — fixes the not showing issue
+  const funcDates = fiveVals(functionalField.dateFunctionalField);
+  const funcBody = [
+    ["Sitting", ...fiveVals(functionalField.sitting)],
+    ["Standing", ...fiveVals(functionalField.standing)],
+    ["Using Living Aid", ...fiveVals(functionalField.usingLivingAid)],
+    ["Going to Restroom", ...fiveVals(functionalField.goingToRestroom)],
+    ["Stairs", ...fiveVals(functionalField.stairs)],
+    ["Putting Shoes/Socks", ...fiveVals(functionalField.puttingShoesOrSocks)],
+    ["Walking 10 Meters", ...fiveVals(functionalField.walking10Meters)],
+    ["Total", ...fiveVals(functionalField.total)],
   ];
 
-  const funcDates = (
-    functionalField.dateFunctionalField || ["", "", "", "", ""]
-  ).map((d: string) => d || "-");
-
-  //  force all 5 columns to show even if empty
   autoTable(doc, {
     startY: y,
     head: [["Activity", ...funcDates]],
-    body: [
-      ...funcRows.map(({ key, label }) => {
-        const row = functionalField[key] || [0, 0, 0, 0, 0];
-        //  ensure exactly 5 values
-        const values = Array.from({ length: 5 }, (_, i) => val(row[i]));
-        return [label, ...values];
-      }),
-      [
-        "Total",
-        ...Array.from({ length: 5 }, (_, i) =>
-          val((functionalField.total || [])[i]),
-        ),
-      ],
-    ],
+    body: funcBody,
     headStyles: { fillColor: [30, 41, 57], halign: "center" },
     styles: { fontSize: 9, halign: "center" },
     columnStyles: {
@@ -294,14 +281,9 @@ export const exportPatientPDF = (data: {
   // ── MOTOR TESTING ───────────────────────────────
   sectionHeader("Motor Testing");
 
-  const rightDates = Array.from({ length: 5 }, (_, i) =>
-    val((motorTesting.rightDates || [])[i]),
-  );
-  const leftDates = Array.from({ length: 5 }, (_, i) =>
-    val((motorTesting.leftDates || [])[i]),
-  );
+  const rightDates = fiveVals(motorTesting.rightDates);
+  const leftDates = fiveVals(motorTesting.leftDates);
 
-  //  full table — all 15 rows, all 11 columns
   autoTable(doc, {
     startY: y,
     head: [
@@ -343,8 +325,8 @@ export const exportPatientPDF = (data: {
     ],
     body: (motorTesting.rows || []).map((row: any) => [
       row.name,
-      ...Array.from({ length: 5 }, (_, i) => val((row.right || [])[i])),
-      ...Array.from({ length: 5 }, (_, i) => val((row.left || [])[i])),
+      ...fiveVals(row.right),
+      ...fiveVals(row.left),
     ]),
     styles: { fontSize: 7, halign: "center" },
     columnStyles: {
@@ -354,21 +336,17 @@ export const exportPatientPDF = (data: {
       3: { cellWidth: 18 },
       4: { cellWidth: 18 },
       5: { cellWidth: 18 },
-      //  thick separator before left
-      6: {
-        cellWidth: 18,
-        lineColor: [30, 41, 57] as any,
-        lineWidth: { left: 1.5 } as any,
-      },
+      6: { cellWidth: 18 },
       7: { cellWidth: 18 },
       8: { cellWidth: 18 },
       9: { cellWidth: 18 },
       10: { cellWidth: 18 },
     },
+    //draw thick separator between right and left columns
     didDrawCell: (data: any) => {
       if (data.column.index === 6) {
         doc.setDrawColor(30, 41, 57);
-        doc.setLineWidth(1);
+        doc.setLineWidth(1.2);
         doc.line(
           data.cell.x,
           data.cell.y,
